@@ -1,0 +1,367 @@
+//-----------------------------------------------------------------------------
+//	SERVER_PF2BETA.VPC
+//
+//	Project Script
+//-----------------------------------------------------------------------------
+
+$Macro SRCDIR		"..\.."
+$Macro GAMENAME 	"npf"
+
+$Include "$SRCDIR\game\server\server_base.vpc"
+//$Include "$SRCDIR\game\server\nav_mesh.vpc"
+
+$Linux
+{
+	$BuildForLinux 1
+}
+
+$Configuration
+{
+	$Compiler
+	{
+		$AdditionalIncludeDirectories	"$BASE;$SRCDIR\game\shared\hl2;.\pf;$SRCDIR\game\shared\Multiplayer;$SRCDIR\game\shared\pf"
+		$PreprocessorDefinitions		"$BASE;PF2;PF2_DLL;GLOWS_ENABLE;USE_INVENTORY;VOTING_ENABLED;"
+	}
+}
+
+$Project "Server ($GAMENAME)"
+{
+	$Folder	"Source Files"
+	{
+		$File	"ai_relationship.cpp"
+		$File	"basegrenade_concussion.cpp"
+		$File	"basegrenade_contact.cpp"
+		$File	"basegrenade_timed.cpp"
+		$File	"EntityFlame.h"
+		$File	"hl2\Func_Monitor.cpp"
+		$File	"GrenadeThrown.cpp"
+		$File	"GrenadeThrown.h"
+		$File	"monstermaker.cpp"
+		$File	"monstermaker.h"
+		$File	"physics_bone_follower.h"
+		$File	"$SRCDIR\game\shared\playerclass_info_parse.cpp"
+		$File	"$SRCDIR\game\shared\playerclass_info_parse.h"
+		$File	"$SRCDIR\game\shared\ragdoll_shared.h"
+		$File	"$SRCDIR\game\shared\solidsetdefaults.h"
+		$File	"$SRCDIR\game\shared\hl2\survival_gamerules.cpp"
+		$File	"team_control_point.cpp"
+		$File	"team_control_point.h"
+		$File	"team_control_point_master.cpp"
+		$File	"team_control_point_master.h"
+		$File	"team_control_point_round.cpp"
+		$File	"team_control_point_round.h"
+		$File	"team_objectiveresource.cpp"
+		$File	"team_objectiveresource.h"
+		$File	"team_train_watcher.cpp"
+		$File	"team_train_watcher.h"
+		$File	"$SRCDIR\game\shared\teamplay_round_timer.cpp"
+		$File	"$SRCDIR\game\shared\teamplay_round_timer.h"
+		$File	"$SRCDIR\game\shared\teamplayroundbased_gamerules.cpp"
+		$File	"$SRCDIR\game\shared\teamplayroundbased_gamerules.h"
+		$File	"$SRCDIR\game\shared\touchlink.h"
+		$File	"trigger_area_capture.cpp"
+		$File	"trigger_area_capture.h"
+		
+		$Folder "PF"
+		{
+			$File	"$SRCDIR\game\shared\pf\achievements_pf.cpp"
+			$File	"$SRCDIR\game\shared\pf\pf_cvars.cpp"
+			$File	"$SRCDIR\game\shared\pf\pf_cvars.h"
+			$File	"$SRCDIR\game\shared\pf\pf_convar_setup.h"
+			$File	"$SRCDIR\game\shared\pf\pf_convar_setup.cpp"
+
+			$File	"pf\tf_obj_detpack.cpp"
+			$File	"pf\tf_obj_detpack.h"
+			
+			$File	"pf\pf_logic_multiflag.cpp"
+			$File	"pf\pf_logic_multiflag.h"
+
+			$File	"$SRCDIR\game\shared\pf\pf_obj_spawnroomturret.cpp"
+			$File	"$SRCDIR\game\shared\pf\pf_obj_spawnroomturret.h"
+
+			$File	"$SRCDIR\game\shared\pf\tf_inventory.cpp"
+			$File	"$SRCDIR\game\shared\pf\tf_inventory.h"
+			
+			$File	"$SRCDIR\game\shared\pf\pf_loadout_parse.cpp"
+			$File	"$SRCDIR\game\shared\pf\pf_loadout_parse.h"
+			
+
+			$File	"$SRCDIR\game\shared\pf\engine_patch.h"
+			$File	"$SRCDIR\game\shared\pf\engine_patch.cpp"
+			{
+				$Configuration
+				{
+					$Compiler
+					{
+						$Create/UsePrecompiledHeader	"Not Using Precompiled Headers"
+					}
+				}
+			}
+			$File "$SRCDIR\game\shared\pf\util\os_utils.h"
+			$File "$SRCDIR\game\shared\pf\util\os_utils.cpp"
+			{
+				$Configuration
+				{
+					$Compiler
+					{
+						$Create/UsePrecompiledHeader	"Not Using Precompiled Headers"
+					}
+				}
+			}
+			$Folder "Weapons"
+			{
+				$Folder	"Bases"
+				{
+					$File	"$SRCDIR\game\shared\pf\tf_weaponbase_grenade.cpp"
+					$File	"$SRCDIR\game\shared\pf\tf_weaponbase_grenade.h"
+				}
+
+				$Folder "Weapons"
+				{
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_brandingiron.cpp"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_brandingiron.h"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_blowtorch.cpp"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_blowtorch.h"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_nailgun.cpp"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_nailgun.h"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_pipe.cpp"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_pipe.h"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_syringe.cpp"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_syringe.h"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_tranq.cpp"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_tranq.h"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_umbrella.cpp"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_umbrella.h"
+				}
+
+				$Folder "Grenades"
+				{
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_grenade_caltrop.cpp"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_grenade_caltrop.h"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_grenade_concussion.cpp"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_grenade_concussion.h"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_grenade_emp.cpp"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_grenade_emp.h"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_grenade_gas.cpp"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_grenade_gas.h"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_grenade_heal.cpp"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_grenade_heal.h"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_grenade_mirv.cpp"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_grenade_mirv.h"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_grenade_nail.cpp"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_grenade_nail.h"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_grenade_napalm.cpp"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_grenade_napalm.h"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_grenade_normal.cpp"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_grenade_normal.h"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_grenade_pipebomb.cpp"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_grenade_pipebomb.h"
+					//$File	"$SRCDIR\game\shared\pf\tf_weapon_grenade_smoke_bomb.cpp"
+					//$File	"$SRCDIR\game\shared\pf\tf_weapon_grenade_smoke_bomb.h"
+				}
+			}
+		}
+		
+		
+
+		$Folder	"TF"
+		{
+			$File	"$SRCDIR\game\shared\pf\baseobject_shared.cpp"
+			$File	"$SRCDIR\game\shared\pf\baseobject_shared.h"
+			$File	"pf\entity_ammopack.cpp"
+			$File	"pf\entity_ammopack.h"
+			$File	"pf\entity_armor.cpp"
+			$File	"pf\entity_armor.h"
+			$File	"$SRCDIR\game\shared\pf\entity_capture_flag.cpp"
+			$File	"$SRCDIR\game\shared\pf\entity_capture_flag.h"
+			$File	"pf\entity_forcerespawn.cpp"
+			$File	"pf\entity_forcerespawn.h"
+			$File	"pf\entity_game_text_tf.cpp"
+			$File	"pf\entity_healthkit.cpp"
+			$File	"pf\entity_healthkit.h"
+			$File	"pf\entity_intermission.cpp"
+			$File	"pf\entity_intermission.h"
+			$File	"pf\entity_roundwin.cpp"
+			$File	"pf\entity_roundwin.h"
+			$File	"pf\entity_tfstart.cpp"
+			$File	"pf\entity_tfstart.h"
+			$File	"pf\func_capture_zone.cpp"
+			$File	"pf\func_capture_zone.h"
+			$File	"pf\func_changeclass.cpp"
+			$File	"pf\func_changeclass.h"
+			$File	"pf\func_no_build.cpp"
+			$File	"pf\func_no_build.h"
+			$File	"pf\func_nogrenades.cpp"
+			$File	"pf\func_nogrenades.h"
+			$File	"pf\func_regenerate.cpp"
+			$File	"pf\func_regenerate.h"
+			$File	"pf\func_respawnflag.cpp"
+			$File	"pf\func_respawnflag.h"
+			$File	"pf\func_respawnroom.cpp"
+			$File	"pf\func_respawnroom.h"
+			$File	"$SRCDIR\game\shared\Multiplayer\multiplayer_animstate.cpp"
+			$File	"$SRCDIR\game\shared\Multiplayer\multiplayer_animstate.h"
+			$File	"pf\tf_ammo_pack.cpp"
+			$File	"pf\tf_ammo_pack.h"
+			$File	"pf\tf_bot_temp.cpp"
+			$File	"pf\tf_bot_temp.h"
+			$File	"pf\tf_client.cpp"
+			$File	"pf\tf_client.h"
+			$File	"pf\tf_eventlog.cpp"
+			$File	"pf\tf_filters.cpp"
+			$File	"pf\tf_fx.cpp"
+			$File	"pf\tf_fx.h"
+			$File	"$SRCDIR\game\shared\pf\tf_fx_shared.cpp"
+			$File	"$SRCDIR\game\shared\pf\tf_fx_shared.h"
+			$File	"pf\tf_gameinterface.cpp"
+			$File	"$SRCDIR\game\shared\pf\tf_gamemovement.cpp"
+			$File	"$SRCDIR\game\shared\pf\tf_gamerules.cpp"
+			$File	"$SRCDIR\game\shared\pf\tf_gamerules.h"
+			$File	"pf\tf_gamestats.cpp"
+			$File	"pf\tf_gamestats.h"
+			$File	"$SRCDIR\game\shared\pf\tf_gamestats_shared.h"
+			$File	"pf\tf_hltvdirector.cpp"
+			$File	"$SRCDIR\game\shared\pf\tf_item.cpp"
+			$File	"$SRCDIR\game\shared\pf\tf_item.h"
+			$File	"pf\tf_obj.cpp"
+			$File	"pf\tf_obj.h"
+			$File	"$SRCDIR\game\shared\pf\tf_obj_baseupgrade_shared.cpp"
+			$File	"$SRCDIR\game\shared\pf\tf_obj_baseupgrade_shared.h"
+			$File	"pf\tf_obj_dispenser.cpp"
+			$File	"pf\tf_obj_dispenser.h"
+			$File	"pf\tf_obj_sapper.cpp"
+			$File	"pf\tf_obj_sapper.h"
+			$File	"pf\tf_obj_sentrygun.cpp"
+			$File	"pf\tf_obj_sentrygun.h"
+			$File	"pf\tf_obj_teleporter.cpp"
+			$File	"pf\tf_obj_teleporter.h"
+			$File	"pf\tf_objective_resource.cpp"
+			$File	"pf\tf_objective_resource.h"
+			$File	"pf\tf_player.cpp"
+			$File	"pf\tf_player.h"			
+			$File	"pf\tf_pushentity.cpp"
+			$File	"pf\tf_pushentity.h"	
+			$File	"pf\tf_player_resource.cpp"
+			$File	"pf\tf_player_resource.h"
+			$File	"$SRCDIR\game\shared\pf\tf_player_shared.cpp"
+			$File	"$SRCDIR\game\shared\pf\tf_player_shared.h"
+			$File	"$SRCDIR\game\shared\pf\tf_playeranimstate.cpp"
+			$File	"$SRCDIR\game\shared\pf\tf_playeranimstate.h"
+			$File	"pf\tf_playerclass.cpp"
+			$File	"pf\tf_playerclass.h"
+			$File	"$SRCDIR\game\shared\pf\tf_playerclass_info_parse.cpp"
+			$File	"$SRCDIR\game\shared\pf\tf_playerclass_shared.cpp"
+			$File	"$SRCDIR\game\shared\pf\tf_playerclass_shared.h"
+			$File	"pf\tf_playermove.cpp"
+			$File	"pf\tf_powerup.cpp"
+			$File	"pf\tf_powerup.h"
+			$File	"$SRCDIR\game\shared\pf\tf_shareddefs.cpp"
+			$File	"$SRCDIR\game\shared\pf\tf_shareddefs.h"
+			$File	"pf\tf_team.cpp"
+			$File	"pf\tf_team.h"
+			$File	"pf\tf_turret.cpp"
+			$File	"pf\tf_turret.h"
+			$File	"$SRCDIR\game\shared\pf\tf_usermessages.cpp"
+			$File	"$SRCDIR\game\shared\pf\tf_viewmodel.cpp"
+			$File	"$SRCDIR\game\shared\pf\tf_viewmodel.h"
+			$File	"$SRCDIR\game\server\pf\tf_logic_hybrid_ctf_cp.cpp"
+			$File	"$SRCDIR\game\server\pf\tf_logic_hybrid_ctf_cp.h"
+			$File	"pf\tf_voteissues.cpp"
+			$File	"pf\tf_voteissues.h"
+			$File	"$SRCDIR\game\shared\pf\tf_gamestats_shared.cpp"
+			$File 	"$SRCDIR\game\server\ent_holiday_check.cpp"
+			{
+				$Configuration
+				{
+					$Compiler
+					{
+						$Create/UsePrecompiledHeader	"Not Using Precompiled Headers"
+					}
+				}
+			}
+
+			$Folder	"Weapon"
+			{
+				$Folder	"Bases"
+				{
+					$File	"$SRCDIR\game\shared\pf\tf_weaponbase.cpp"
+					$File	"$SRCDIR\game\shared\pf\tf_weaponbase.h"
+					$File	"$SRCDIR\game\shared\pf\tf_weaponbase_grenadeproj.cpp"
+					$File	"$SRCDIR\game\shared\pf\tf_weaponbase_grenadeproj.h"
+					$File	"$SRCDIR\game\shared\pf\tf_weaponbase_gun.cpp"
+					$File	"$SRCDIR\game\shared\pf\tf_weaponbase_gun.h"
+					$File	"$SRCDIR\game\shared\pf\tf_weaponbase_melee.cpp"
+					$File	"$SRCDIR\game\shared\pf\tf_weaponbase_melee.h"
+					$File	"$SRCDIR\game\shared\pf\tf_weaponbase_rocket.cpp"
+					$File	"$SRCDIR\game\shared\pf\tf_weaponbase_rocket.h"
+					$File	"$SRCDIR\game\shared\pf\tf_projectile_base.cpp"
+					$File	"$SRCDIR\game\shared\pf\tf_projectile_base.h"
+					$File	"$SRCDIR\game\shared\pf\tf_projectile_nail.cpp"
+					$File	"$SRCDIR\game\shared\pf\tf_projectile_nail.h"
+					$File	"pf\tf_projectile_rocket.cpp"
+					$File	"pf\tf_projectile_rocket.h"
+				}
+				
+				$Folder "Weapons"
+				{
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_bat.cpp"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_bat.h"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_bottle.cpp"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_bottle.h"
+					$File	"pf\tf_weapon_builder.cpp"
+					$File	"pf\tf_weapon_builder.h"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_club.cpp"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_club.h"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_cubemap.cpp"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_cubemap.h"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_flamethrower.cpp"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_flamethrower.h"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_grenadelauncher.cpp"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_grenadelauncher.h"				
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_invis.cpp"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_invis.h"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_knife.cpp"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_knife.h"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_medigun.cpp"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_medigun.h"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_minigun.cpp"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_minigun.h"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_parse.cpp"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_parse.h"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_pda.cpp"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_pda.h"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_pipebomblauncher.cpp"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_pipebomblauncher.h"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_pistol.cpp"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_pistol.h"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_revolver.cpp"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_revolver.h"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_rocketlauncher.cpp"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_rocketlauncher.h"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_shotgun.cpp"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_shotgun.h"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_shovel.cpp"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_shovel.h"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_smg.cpp"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_smg.h"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_sniperrifle.cpp"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_sniperrifle.h"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_syringegun.cpp"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_syringegun.h"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_wrench.cpp"
+					$File	"$SRCDIR\game\shared\pf\tf_weapon_wrench.h"
+				}	
+			}
+		}
+		
+		$Folder	"IFM"
+		{
+			$File	"$SRCDIR\game\shared\weapon_ifmbase.cpp"
+			$File	"$SRCDIR\game\shared\weapon_ifmbase.h"
+			$File	"$SRCDIR\game\shared\weapon_ifmbasecamera.cpp"
+			$File	"$SRCDIR\game\shared\weapon_ifmbasecamera.h"
+			$File	"$SRCDIR\game\shared\weapon_ifmsteadycam.cpp"
+			$File	"$SRCDIR\game\shared\weapon_ifmsteadycam.h"
+		}
+	}
+}

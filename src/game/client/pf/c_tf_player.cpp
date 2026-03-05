@@ -1240,40 +1240,41 @@ RecvPropArray2(
 	RecvPropFloat( RECVINFO( m_angEyeAngles[0] ) ),
 	//	RecvPropFloat( RECVINFO( m_angEyeAngles[1] ) ),
 
-	END_RECV_TABLE()
+END_RECV_TABLE()
 
-	// all players except the local player
-	BEGIN_RECV_TABLE_NOBASE( C_TFPlayer, DT_TFNonLocalPlayerExclusive )
+// all players except the local player
+BEGIN_RECV_TABLE_NOBASE( C_TFPlayer, DT_TFNonLocalPlayerExclusive )
 	RecvPropVector( RECVINFO_NAME( m_vecNetworkOrigin, m_vecOrigin ) ),
 
 	RecvPropFloat( RECVINFO( m_angEyeAngles[0] ) ),
 	RecvPropFloat( RECVINFO( m_angEyeAngles[1] ) ),
 
-	END_RECV_TABLE()
+END_RECV_TABLE()
 
-	IMPLEMENT_CLIENTCLASS_DT( C_TFPlayer, DT_TFPlayer, CTFPlayer )
+IMPLEMENT_CLIENTCLASS_DT( C_TFPlayer, DT_TFPlayer, CTFPlayer )
 
 	RecvPropBool( RECVINFO( m_bSaveMeParity ) ),
 
-// This will create a race condition will the local player, but the data will be the same so.....
-RecvPropInt( RECVINFO( m_nWaterLevel ) ),
-RecvPropEHandle( RECVINFO( m_hRagdoll ) ),
-RecvPropDataTable( RECVINFO_DT( m_PlayerClass ), 0, &REFERENCE_RECV_TABLE( DT_TFPlayerClassShared ) ),
-RecvPropDataTable( RECVINFO_DT( m_Shared ), 0, &REFERENCE_RECV_TABLE( DT_TFPlayerShared ) ),
-#ifdef PF2_CLIENT
-RecvPropBool( RECVINFO( m_bTyping ) ),
-#endif
-RecvPropEHandle( RECVINFO( m_hItem ) ),
-RecvPropDataTable( "tflocaldata", 0, 0, &REFERENCE_RECV_TABLE( DT_TFLocalPlayerExclusive ) ),
-RecvPropDataTable( "tfnonlocaldata", 0, 0, &REFERENCE_RECV_TABLE( DT_TFNonLocalPlayerExclusive ) ),
+	// This will create a race condition will the local player, but the data will be the same so.....
+	RecvPropInt( RECVINFO( m_nWaterLevel ) ),
+	RecvPropEHandle( RECVINFO( m_hRagdoll ) ),
+	RecvPropDataTable( RECVINFO_DT( m_PlayerClass ), 0, &REFERENCE_RECV_TABLE( DT_TFPlayerClassShared ) ),
+	RecvPropDataTable( RECVINFO_DT( m_Shared ), 0, &REFERENCE_RECV_TABLE( DT_TFPlayerShared ) ),
+	#ifdef PF2_CLIENT
+	RecvPropBool( RECVINFO( m_bTyping ) ),
+	#endif
+	RecvPropEHandle( RECVINFO( m_hItem ) ),
+	RecvPropDataTable( "tflocaldata", 0, 0, &REFERENCE_RECV_TABLE( DT_TFLocalPlayerExclusive ) ),
+	RecvPropDataTable( "tfnonlocaldata", 0, 0, &REFERENCE_RECV_TABLE( DT_TFNonLocalPlayerExclusive ) ),
 
-RecvPropInt( RECVINFO( m_iSpawnCounter ) ),
-RecvPropInt( RECVINFO( m_nForceTauntCam ) ),
-#ifdef PF2_CLIENT
-RecvPropInt( RECVINFO( m_ArmorValue ) ),
-RecvPropBool( RECVINFO( m_bIsLeadDev ) ),
-RecvPropEHandle( RECVINFO( m_hOffHandWeapon ) ),
-#endif
+	RecvPropInt( RECVINFO( m_iSpawnCounter ) ),
+	RecvPropBool( RECVINFO( m_bFlipViewModels ) ),
+	RecvPropInt( RECVINFO( m_nForceTauntCam ) ),
+	#ifdef PF2_CLIENT
+	RecvPropInt( RECVINFO( m_ArmorValue ) ),
+	RecvPropBool( RECVINFO( m_bIsLeadDev ) ),
+	RecvPropEHandle( RECVINFO( m_hOffHandWeapon ) ),
+	#endif
 END_RECV_TABLE()
 
 
@@ -2831,6 +2832,40 @@ void C_TFPlayer::DoAnimationEvent( PlayerAnimEvent_t event, int nData )
 
 	MDLCACHE_CRITICAL_SECTION();
 	m_PlayerAnimState->DoAnimationEvent( event, nData );
+}
+
+void C_TFPlayer::FlushAllPlayerVisibilityState()
+{
+	// We've switch from first to third, or vice versa.
+	UpdateVisibility();
+
+	// Update the visibility of anything bone attached to us.
+	if ( IsLocalPlayer() )
+	{
+		bool bShouldDrawLocalPlayer = ShouldDrawLocalPlayer();
+		for ( int i = 0; i < GetNumBoneAttachments(); ++i )
+		{
+			C_BaseAnimating *pBoneAttachment = GetBoneAttachment( i );
+			if ( pBoneAttachment )
+			{
+				if ( bShouldDrawLocalPlayer )
+				{
+					pBoneAttachment->RemoveEffects( EF_NODRAW );
+				}
+				else
+				{
+					pBoneAttachment->AddEffects( EF_NODRAW );
+				}
+			}
+		}
+	}
+
+	// Update our weapon's visibility when we switch
+	C_TFWeaponBase *pWeapon = GetActiveTFWeapon();
+	if ( pWeapon )
+	{
+		pWeapon->UpdateVisibility();
+	}
 }
 
 //-----------------------------------------------------------------------------

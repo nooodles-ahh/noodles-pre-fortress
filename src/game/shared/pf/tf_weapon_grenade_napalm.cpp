@@ -19,7 +19,7 @@
 #include "KeyValues.h"
 #include "trigger_area_capture.h"
 #include "explode.h"
-#include "tf/tf_fx.h"
+#include "tf_fx.h"
 #endif
 
 #define NAPALM_BURN_TIMER 5.0f

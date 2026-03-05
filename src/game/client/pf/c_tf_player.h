@@ -385,6 +385,8 @@ public:
 
 	void DoAnimationEvent( PlayerAnimEvent_t event, int nData = 0 );
 
+	void FlushAllPlayerVisibilityState();
+
 	CTFPlayerAnimState *m_PlayerAnimState;
 
 	QAngle	m_angEyeAngles;
@@ -433,7 +435,7 @@ public:
 	bool			m_bDisguised;
 	int				m_iPreviousMetal;
 
-#ifdef PF2_CLIENT
+#if defined( PF2 )
 	EHANDLE			m_hOldActiveWeapon;
 #endif
 
