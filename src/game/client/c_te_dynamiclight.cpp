@@ -17,6 +17,10 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
+#if defined( PF2 )
+extern ConVar pf_muzzlelightsprops;
+#endif
+
 //-----------------------------------------------------------------------------
 // Purpose: Dynamic Light
 //-----------------------------------------------------------------------------
@@ -86,6 +90,13 @@ void TE_DynamicLight( IRecipientFilter& filter, float delay,
 	dlight_t *dl = effects->CL_AllocDlight( nLightIndex );
 	if ( !dl )
 		return;
+
+#if defined( PF2 )
+	if ( !pf_muzzlelightsprops.GetBool() )
+		dl->flags = DLIGHT_NO_MODEL_ILLUMINATION;
+
+	dl->style = 1;
+#endif
 
 	dl->origin	= *org;
 	dl->radius	= radius;

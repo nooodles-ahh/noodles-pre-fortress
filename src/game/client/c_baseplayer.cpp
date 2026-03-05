@@ -50,7 +50,7 @@
 #include "sourcevr/isourcevirtualreality.h"
 #include "client_virtualreality.h"
 
-#ifdef TF_CLIENT_DLL
+#if defined( TF_CLIENT_DLL ) || defined( PF2 )
 #include "tf_gamerules.h"
 #endif
 
@@ -944,7 +944,7 @@ void C_BasePlayer::PostDataUpdate( DataUpdateType_t updateType )
 
 		if ( m_Local.m_bPrevForceLocalPlayerDraw != m_Local.m_bForceLocalPlayerDraw )
 		{
-#ifdef TF_CLIENT_DLL
+#if defined( TF_CLIENT_DLL ) || defined( PF2 )
 			CTFPlayer *pTFPlayer = ToTFPlayer( this );
 			if ( pTFPlayer )
 				pTFPlayer->FlushAllPlayerVisibilityState();

@@ -195,6 +195,10 @@ CStudioHdr *C_BaseFlex::OnNewModel()
 	
 	// init to invalid setting
 	m_iBlink = -1;
+#if defined( PF2 )
+	m_iBlinkL = -1;
+	m_iBlinkR = -1;
+#endif
 	m_iEyeUpdown = LocalFlexController_t(-1);
 	m_iEyeRightleft = LocalFlexController_t(-1);
 	m_bSearchedForEyeFlexes = false;
@@ -351,7 +355,7 @@ bool CFlexSceneFileManager::Init()
 	FindSceneFile( NULL, "randomAlert", true );
 #endif
 
-#if defined( TF_CLIENT_DLL )
+#if defined( TF_CLIENT_DLL ) || defined( PF2_CLIENT )
 	// HACK TO ALL TF TO HAVE PER CLASS OVERRIDES
 	char const *pTFClasses[] = 
 	{
@@ -433,7 +437,7 @@ void *CFlexSceneFileManager::FindSceneFile( IHasLocalToGlobalFlexSettings *insta
 	Assert( V_strlen( filename ) < MAX_PATH );
 	V_strcpy_safe( szFilename, filename );
 	
-#if defined( TF_CLIENT_DLL )	
+#if defined( TF_CLIENT_DLL ) || defined( PF2 )
 	char szHWMFilename[MAX_PATH];
 	if ( GetHWMExpressionFileName( szFilename, szHWMFilename ) )
 	{
@@ -1022,15 +1026,30 @@ void C_BaseFlex::GetToolRecordingState( KeyValues *msg )
 	ProcessSceneEvents( false );
 
 	// check for blinking
-	if (m_blinktoggle != m_prevblinktoggle)
+#if defined PF2
+	if ( m_nRenderFX != kRenderFxRagdoll )
 	{
-		m_prevblinktoggle = m_blinktoggle;
-		m_blinktime = gpGlobals->curtime + g_CV_BlinkDuration.GetFloat();
+#endif
+		if ( m_blinktoggle != m_prevblinktoggle )
+		{
+			m_prevblinktoggle = m_blinktoggle;
+			m_blinktime = gpGlobals->curtime + g_CV_BlinkDuration.GetFloat();
+		}
+#if defined( PF2 )
 	}
+#endif
 
 	if (m_iBlink == -1)
 		m_iBlink = AddGlobalFlexController( "blink" );
 	g_flexweight[m_iBlink] = 0;
+
+#if defined( PF2 )
+	if ( m_iBlinkL == -1 )
+		m_iBlinkL = AddGlobalFlexController( "left_CloseLid" );
+
+	if ( m_iBlinkR == -1 )
+		m_iBlinkR = AddGlobalFlexController( "right_CloseLid" );
+#endif
 
 	// FIXME: this needs a better algorithm
 	// blink the eyes
@@ -1044,6 +1063,16 @@ void C_BaseFlex::GetToolRecordingState( KeyValues *msg )
 			g_flexweight[m_iBlink] = sqrtf( t ) * 2;
 			if (g_flexweight[m_iBlink] > 1)
 				g_flexweight[m_iBlink] = 2.0 - g_flexweight[m_iBlink];
+
+#if defined( PF2 )
+			g_flexweight[m_iBlinkL] = sqrtf( t ) * 2;
+			if ( g_flexweight[m_iBlinkL] > 1 )
+				g_flexweight[m_iBlinkL] = 2.0 - g_flexweight[m_iBlinkL];
+
+			g_flexweight[m_iBlinkR] = sqrtf( t ) * 2;
+			if ( g_flexweight[m_iBlinkR] > 1 )
+				g_flexweight[m_iBlinkR] = 2.0 - g_flexweight[m_iBlinkR];
+#endif
 		}
 	}
 
@@ -1149,6 +1178,10 @@ void C_BaseFlex::SetupWeights( const matrix3x4_t *pBoneToWorld, int nFlexWeightC
 	// hack in an initialization
 	LinkToGlobalFlexControllers( GetModelPtr() );
 
+#if defined( PF2 )
+	m_iBlink = AddGlobalFlexController( "blink" );
+#endif
+
 	if ( SetupGlobalWeights( pBoneToWorld, nFlexWeightCount, pFlexWeights, pFlexDelayedWeights ) )
 	{
 		SetupLocalWeights( pBoneToWorld, nFlexWeightCount, pFlexWeights, pFlexDelayedWeights );
@@ -1224,12 +1257,26 @@ bool C_BaseFlex::SetupGlobalWeights( const matrix3x4_t *pBoneToWorld, int nFlexW
 
 	ProcessSceneEvents( false );
 
+#if defined( PF2 )
+	if ( m_nRenderFX != kRenderFxRagdoll )
+	{
+#endif
+
 	// check for blinking
 	if (m_blinktoggle != m_prevblinktoggle)
 	{
 		m_prevblinktoggle = m_blinktoggle;
 		m_blinktime = gpGlobals->curtime + g_CV_BlinkDuration.GetFloat();
 	}
+
+#if defined( PF2 )
+	if ( m_iBlinkL == -1 )
+		m_iBlinkL = AddGlobalFlexController( "left_CloseLid" );
+
+	if ( m_iBlinkR == -1 )
+		m_iBlinkR = AddGlobalFlexController( "right_CloseLid" );
+	}
+#endif
 
 	if (m_iBlink == -1)
 	{
@@ -1252,7 +1299,13 @@ bool C_BaseFlex::SetupGlobalWeights( const matrix3x4_t *pBoneToWorld, int nFlexW
 				t = 2.0f - t;
 			t = clamp( t, 0.0f, 1.0f );
 			// add it to whatever the blink track is doing
+#if defined( PF2 )
+			g_flexweight[m_iBlink] = clamp( g_flexweight[m_iBlink] + t, 0.0f, 2.0f );
+			g_flexweight[m_iBlinkL] = clamp( g_flexweight[m_iBlinkL] + t, 0.0f, 2.0f );
+			g_flexweight[m_iBlinkR] = clamp( g_flexweight[m_iBlinkR] + t, 0.0f, 2.0f );
+#else
 			g_flexweight[m_iBlink] = clamp( g_flexweight[m_iBlink] + t, 0.0f, 1.0f );
+#endif
 		}
 	}
 

@@ -1268,6 +1268,11 @@ void CHudControlPointIcons::ShutdownIcons( void )
 		{
 			m_iCurrentCP = -1;
 			pProgressBar->SetupForPoint( NULL );
+#if defined( PF2 )
+			// this seems unnecessary but it stopped crashing
+			pProgressBar->Reset();
+			pProgressBar->SetVisible( false );
+#endif
 		}
 	}
 }
@@ -1844,6 +1849,9 @@ void CControlPointCountdown::OnTick( void )
 	{
 		if ( TeamplayRoundBasedRules()->IsInWaitingForPlayers() || TeamplayRoundBasedRules()->State_Get() != GR_STATE_RND_RUNNING )
 		{
+#if defined( PF2 )
+			if ( !( TeamplayRoundBasedRules()->State_Get() == GR_STATE_STALEMATE && TeamplayGameRules()->GetGameType() == TF_GAMETYPE_ARENA ) )
+#endif
 			return;
 		}
 	}

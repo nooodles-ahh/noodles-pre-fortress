@@ -179,6 +179,7 @@ public:
 	
 	virtual void SetPredictable( bool state );
 	void UseClientSideAnimation();
+	void UseServerSideAnimation();
 
 	// C_BaseClientShader **p_ClientShaders;
 
@@ -476,7 +477,13 @@ private:
 
 	CBoneList*						RecordBones( CStudioHdr *hdr, matrix3x4_t *pBoneState );
 
+#if defined(PF2)
+public:
+#endif
 	bool							PutAttachment( int number, const matrix3x4_t &attachmentToWorld );
+#if defined(PF2)
+private:
+#endif
 	void							TermRopes();
 
 	void							DelayedInitModelEffects( void );
@@ -612,7 +619,11 @@ private:
 	// Calculated attachment points
 	CUtlVector<CAttachmentData>		m_Attachments;
 
+#if defined(PF2)
+	virtual bool					SetupBones_AttachmentHelper( CStudioHdr *pStudioHdr );
+#else
 	bool							SetupBones_AttachmentHelper( CStudioHdr *pStudioHdr );
+#endif
 
 	EHANDLE							m_hLightingOrigin;
 	EHANDLE							m_hLightingOriginRelative;

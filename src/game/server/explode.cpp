@@ -250,10 +250,13 @@ void CEnvExplosion::InputExplode( inputdata_t &inputdata )
 	// which to place the explosion. We don't use that new position to calculate radius damage because according to Steve's
 	// comment, that adversely affects the force vector imparted on explosion victims when they ragdoll.
 	Vector vecExplodeOrigin = GetAbsOrigin();
+#if defined( PF2 ) //We've already pulled the explosion out of the wall
+	// PF2TODO Cyanide; We might actually need to keep this, shooting up into ceilings is a bit borked
 	if ( tr.fraction != 1.0 )
 	{
 		vecExplodeOrigin = tr.endpos + (tr.plane.normal * 24 );
 	}
+#endif
 
 	// draw decal
 	if (! ( m_spawnflags & SF_ENVEXPLOSION_NODECAL))

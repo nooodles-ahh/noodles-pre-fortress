@@ -254,6 +254,10 @@ private:
 	int				m_prevblinktoggle;
 
 	int				m_iBlink;
+#if defined( PF2 )
+	int				m_iBlinkL;
+	int				m_iBlinkR;
+#endif
 	LocalFlexController_t				m_iEyeUpdown;
 	LocalFlexController_t				m_iEyeRightleft;
 	bool			m_bSearchedForEyeFlexes;

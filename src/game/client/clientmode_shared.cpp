@@ -1274,7 +1274,11 @@ void ClientModeShared::FireGameEvent( IGameEvent *event )
 					pPlayer->SetNextAchievementAnnounceTime( gpGlobals->curtime + ACHIEVEMENT_ANNOUNCEMENT_MIN_TIME );
 
 					// no particle effect if the local player is the one with the achievement or the player is dead
+#if defined( PF2 )
+					if ( ( !pPlayer->IsLocalPlayer() || ( pPlayer->IsLocalPlayer() && ( pPlayer->ShouldDrawLocalPlayer() || !pPlayer->InFirstPersonView() ) ) ) && pPlayer->IsAlive() )
+#else
 					if ( !pPlayer->IsLocalPlayer() && pPlayer->IsAlive() ) 
+#endif
 					{
 						pPlayer->ParticleProp()->Create( "achieved", PATTACH_POINT_FOLLOW, "head" );
 					}
@@ -1296,7 +1300,11 @@ void ClientModeShared::FireGameEvent( IGameEvent *event )
 						char szLocalized[128];
 						g_pVGuiLocalize->ConvertUnicodeToANSI( wszLocalizedString, szLocalized, sizeof( szLocalized ) );
 
+#if defined( PF2 )
+						hudChat->ChatPrintf( iPlayerIndex, CHAT_FILTER_ACHIEVEMENT, "%s", szLocalized );
+#else
 						hudChat->ChatPrintf( iPlayerIndex, CHAT_FILTER_SERVERMSG, "%s", szLocalized );
+#endif
 					}
 				}
 			}

@@ -56,8 +56,6 @@ $Project "Client ($GAMENAME)"
 			$File	"$SRCDIR\game\shared\pf\pf_cvars.h"
 			$File	"$SRCDIR\game\shared\pf\pf_convar_setup.cpp"
 			$File	"$SRCDIR\game\shared\pf\pf_convar_setup.h"
-			$File   "pf\pf_discord_rpc.cpp"
-			$File   "pf\pf_discord_rpc.h"
 			$File	"pf\pf_music_system.cpp"
 			$File	"pf\pf_music_system.h"
 
@@ -529,10 +527,5 @@ $Project "Client ($GAMENAME)"
 			$File	"$SRCDIR\game\shared\weapon_ifmbasecamera.h"
 			$File	"$SRCDIR\game\shared\weapon_ifmsteadycam.cpp"
 		}
-	}
-	
-	$Folder	"Link Libraries"
-	{
-		$Implib	"$LIBPUBLIC\discord-rpc"
 	}
 }

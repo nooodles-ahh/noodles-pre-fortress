@@ -251,7 +251,9 @@ void C_TEExplosion::PostDataUpdate( DataUpdateType_t updateType )
 {
 	RecordExplosion();
 
+#if defined( PF2 )
 	AffectRagdolls();
+#endif
 
 	// Filter out a water explosion
 	if ( UTIL_PointContents( m_vecOrigin ) & CONTENTS_WATER )

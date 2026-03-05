@@ -101,6 +101,7 @@ void CAchievementNotificationPanel::FireGameEvent( IGameEvent * event )
 		int iMax = event->GetInt( "max_val" );
 		wchar_t szLocalizedName[256]=L"";
 
+#if !defined( PF2_CLIENT )
 		if ( IsPC() )
 		{
 			// shouldn't ever get achievement progress if steam not running and user logged in, but check just in case
@@ -114,7 +115,8 @@ void CAchievementNotificationPanel::FireGameEvent( IGameEvent * event )
 				steamapicontext->SteamUserStats()->IndicateAchievementProgress( pchName, iCur, iMax );
 			}
 		}
-		else 
+		else
+#endif
 		{
 			// on X360 we need to show our own achievement progress UI
 
@@ -123,6 +125,15 @@ void CAchievementNotificationPanel::FireGameEvent( IGameEvent * event )
 			if ( !pchLocalizedName || !pchLocalizedName[0] )
 				return;
 			Q_wcsncpy( szLocalizedName, pchLocalizedName, sizeof( szLocalizedName ) );
+
+#if defined( PF2_CLIENT )
+			// have we just unlocked this achievement?
+			if ( iCur >= iMax )
+			{
+				AddNotification( pchName, g_pVGuiLocalize->Find( "#GameUI_Achievement_Awarded" ), szLocalizedName );
+				return;
+			}
+#endif
 
 			// this is achievement progress, compose the message of form: "<name> (<#>/<max>)"
 			wchar_t szFmt[128]=L"";
@@ -248,14 +259,23 @@ void CAchievementNotificationPanel::SetXAndWide( Panel *pPanel, int x, int wide 
 CON_COMMAND_F( achievement_notification_test, "Test the hud notification UI", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY )
 {
 	static int iCount=0;
-
+#if defined(PF2_CLIENT)
+	IGameEvent *event = gameeventmanager->CreateEvent( "achievement_event" );
+	if ( event )
+	{
+		const char *szTestStr[] = { "PF_GET_TRANQKILL", "PF_GET_ARMORREPAIRPOINTS", "PF_DESTROY_SAPPER_GUN", "PF_USE_ENEMY_TELEPORTER", "PF_EMP_BLAST_AMMOKILL", "PF_GET_ALT_HEALPOINTS", "PF_KILL_BY_PIPEBOUNCE" , "PF_NAPALM_BURN", "PF_BONK_BY_NADE", "PF_FATFINGERS", "PF_NADE_MULTI_HEAL_PLAYER" };
+		event->SetString( "achievement_name", szTestStr[iCount % ARRAYSIZE( szTestStr )] );
+		event->SetInt( "cur_val", ( iCount % 9 ) + 1 );
+		event->SetInt( "max_val", 10 );
+		gameeventmanager->FireEvent( event );
+	}
+#else
 	CAchievementNotificationPanel *pPanel = GET_HUDELEMENT( CAchievementNotificationPanel );
 	if ( pPanel )
 	{		
 		pPanel->AddNotification( "HL2_KILL_ODESSAGUNSHIP", L"Achievement Progress", ( 0 == ( iCount % 2 ) ? L"Test Notification Message A (1/10)" :
 			L"Test Message B" ) );
 	}
-
 #if 0
 	IGameEvent *event = gameeventmanager->CreateEvent( "achievement_event" );
 	if ( event )
@@ -266,6 +286,7 @@ CON_COMMAND_F( achievement_notification_test, "Test the hud notification UI", FC
 		event->SetInt( "max_val", 10 );
 		gameeventmanager->FireEvent( event );
 	}	
+#endif
 #endif
 
 	iCount++;

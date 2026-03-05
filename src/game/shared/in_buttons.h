@@ -37,5 +37,8 @@
 #define IN_GRENADE1		(1 << 23)	// grenade 1
 #define IN_GRENADE2		(1 << 24)	// grenade 2
 #define	IN_ATTACK3		(1 << 25)
+#if defined( PF2 )
+#define IN_TYPING		(1 << 31)	// Nooodles; this is really stupid, where was this originally from?
+#endif
 
 #endif // IN_BUTTONS_H

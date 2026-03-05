@@ -710,11 +710,18 @@ void C_BaseExplosionEffect::CreateMisc( void )
 {
 }
 
+#if defined( PF2 )
+extern ConVar pf_projectilelight;
+#endif
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
 void C_BaseExplosionEffect::CreateDynamicLight( void )
 {
+#if defined( PF2 )
+	if ( !pf_projectilelight.GetBool() )
+		return;
+#endif
 	if ( m_fFlags & TE_EXPLFLAG_NODLIGHTS )
 		return;
 
@@ -722,11 +729,20 @@ void C_BaseExplosionEffect::CreateDynamicLight( void )
 	
 	VectorCopy (m_vecOrigin, dl->origin);
 	
+#if defined( PF2 )
+	dl->flags = DLIGHT_NO_MODEL_ILLUMINATION;
+	dl->decay = 200;
+	dl->radius = 255;
+	dl->color.r = 255;
+	dl->color.g = 100;
+	dl->color.b = 10;
+#else
 	dl->decay	= 200;
 	dl->radius	= 255;
 	dl->color.r = 255;
 	dl->color.g = 220;
 	dl->color.b = 128;
+#endif
 	dl->die		= gpGlobals->curtime + 0.1f;
 }
 

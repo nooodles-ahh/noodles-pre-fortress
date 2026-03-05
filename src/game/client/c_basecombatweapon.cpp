@@ -261,6 +261,7 @@ void C_BaseCombatWeapon::DrawCrosshair()
 	}		 
 */
 
+#if !defined(PF2)
 	CHudCrosshair *pCrosshair = GET_HUDELEMENT( CHudCrosshair );
 	if ( !pCrosshair )
 		return;
@@ -299,6 +300,7 @@ void C_BaseCombatWeapon::DrawCrosshair()
 		else
 			pCrosshair->ResetCrosshair();
 	}
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -509,7 +511,13 @@ int C_BaseCombatWeapon::CalcOverrideModelIndex()
 		localplayer == GetOwner() &&
 		ShouldDrawLocalPlayerViewModel() )
 	{
+#if defined(PF2)
+		// Temp fix for weapon model not getting set back to viewmodel after
+		// switching back from third person. (Nicknine, danielmm8888)
+		return m_iViewModelIndex;
+#else
 		return BaseClass::CalcOverrideModelIndex();
+#endif
 	}
 	else
 	{

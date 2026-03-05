@@ -26,7 +26,11 @@ class CVGuiScreen;
 #define CBaseCombatWeapon C_BaseCombatWeapon
 #endif
 
+#if defined( PF2 )
+#define VIEWMODEL_INDEX_BITS 2
+#else
 #define VIEWMODEL_INDEX_BITS 1
+#endif
 
 class CBaseViewModel : public CBaseAnimating, public IHasOwner
 {

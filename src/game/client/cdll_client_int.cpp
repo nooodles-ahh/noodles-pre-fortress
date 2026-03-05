@@ -173,6 +173,10 @@ extern vgui::IInputInternal *g_InputInternal;
 #include "sixense/in_sixense.h"
 #endif
 
+#if defined( PF2 )
+#include "tf_inventory.h"
+#endif
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -1096,6 +1100,11 @@ int CHLClient::Init( CreateInterfaceFn appSystemFactory, CreateInterfaceFn physi
 
 	C_BaseAnimating::InitBoneSetupThreadPool();
 
+#if defined( PF2 )
+	// Also Inits TF Classes!
+	InitTFInventory();
+#endif
+
 #if defined( WIN32 ) && !defined( _X360 )
 	// NVNT connect haptics sytem
 	ConnectHaptics(appSystemFactory);
@@ -1756,7 +1765,7 @@ void CHLClient::LevelShutdown( void )
 
 	messagechars->Clear();
 
-#ifndef TF_CLIENT_DLL
+#if !defined( TF_CLIENT_DLL ) && !defined( PF2 )
 	// don't want to do this for TF2 because we have particle systems in our
 	// character loadout screen that can be viewed when we're not connected to a server
 	g_pParticleSystemMgr->UncacheAllParticleSystems();

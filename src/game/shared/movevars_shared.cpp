@@ -8,7 +8,7 @@
 #include "cbase.h"
 #include "movevars_shared.h"
 
-#if defined( TF_CLIENT_DLL ) || defined( TF_DLL )
+#if defined( TF_CLIENT_DLL ) || defined( TF_DLL ) || defined( PF2 )
 #include "tf_gamerules.h"
 #endif
 

@@ -94,7 +94,11 @@ void CRagdollManager::Activate()
 	BaseClass::Activate();
 
 	// Cache off the DX level for use later.
+#if defined( PF2 )
+	ConVarRef mat_dxlevel( "mat_dxlevel", true );
+#else
 	ConVarRef mat_dxlevel( "mat_dxlevel" );
+#endif
 	m_iDXLevel = mat_dxlevel.GetInt();
 	
 	UpdateCurrentMaxRagDollCount();

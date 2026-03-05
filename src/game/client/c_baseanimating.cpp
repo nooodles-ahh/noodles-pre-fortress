@@ -61,6 +61,10 @@
 #include "tf_gamerules.h"
 #endif
 
+#if defined(PF2)
+#include "pf_cvars.h"
+#endif
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -868,6 +872,13 @@ void C_BaseAnimating::UseClientSideAnimation()
 {
 	m_bClientSideAnimation = true;
 }
+
+#if defined(PF2)
+void C_BaseAnimating::UseServerSideAnimation()
+{
+	m_bClientSideAnimation = false;
+}
+#endif
 
 void C_BaseAnimating::UpdateRelevantInterpolatedVars()
 {
@@ -1824,6 +1835,15 @@ void C_BaseAnimating::MaintainSequenceTransitions( IBoneSetup &boneSetup, float 
 		m_nPrevNewSequenceParity = m_nNewSequenceParity;
 		return;
 	}
+
+#if defined(PF2)
+	// MapBase Ragdoll preditction fix
+	if ( IsAboutToRagdoll() )
+	{
+		m_nPrevNewSequenceParity = m_nNewSequenceParity;
+		return;
+	}
+#endif
 
 	m_SequenceTransitioner.CheckForSequenceChange( 
 		boneSetup.GetStudioHdr(),
@@ -3191,7 +3211,7 @@ int C_BaseAnimating::DrawModel( int flags )
 
 	int drawn = 0;
 
-#ifdef TF_CLIENT_DLL
+#if defined( TF_CLIENT_DLL ) || defined( PF2 )
 	ValidateModelIndex();
 #endif
 
@@ -3532,6 +3552,10 @@ void C_BaseAnimating::ProcessMuzzleFlashEvent()
 
 			// Make an elight
 			dlight_t *el = effects->CL_AllocElight( LIGHT_INDEX_MUZZLEFLASH + index );
+#if defined(PF2)
+			if ( !pf_muzzlelightsprops.GetBool() )
+				el->flags = DLIGHT_NO_MODEL_ILLUMINATION;
+#endif
 			el->origin = vAttachment;
 			el->radius = random->RandomInt( 32, 64 ); 
 			el->decay = el->radius / 0.05f;
