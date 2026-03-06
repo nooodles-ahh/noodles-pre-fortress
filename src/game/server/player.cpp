@@ -82,6 +82,11 @@
 #include "weapon_physcannon.h"
 #endif
 
+#if defined( PF2 )
+#include "tf_player.h"
+#include "player_resource.h"
+#endif
+
 ConVar autoaim_max_dist( "autoaim_max_dist", "2160" ); // 2160 = 180 feet
 ConVar autoaim_max_deflect( "autoaim_max_deflect", "0.99" );
 
@@ -2721,6 +2726,14 @@ bool CBasePlayer::IsValidObserverTarget(CBaseEntity * target)
 	return true;	// passed all test
 }
 
+#if defined( PF2 )
+bool CBasePlayer::IsDeveloper()
+{
+	CTFPlayer *pTFPlayer = ToTFPlayer( this );
+	return pTFPlayer->PlayerIsDev();
+}
+#endif
+
 int CBasePlayer::GetNextObserverSearchStartPoint( bool bReverse )
 {
 	int iDir = bReverse ? -1 : 1; 
@@ -5161,7 +5174,7 @@ void CBasePlayer::Spawn( void )
 	m_vecSmoothedVelocity = vec3_origin;
 	InitVCollision( GetAbsOrigin(), GetAbsVelocity() );
 
-#if !defined( TF_DLL )
+#if !defined( TF_DLL ) && !defined( PF2 )
 	IGameEvent *event = gameeventmanager->CreateEvent( "player_spawn" );
 	
 	if ( event )
@@ -5221,7 +5234,7 @@ void CBasePlayer::Precache( void )
 	enginesound->PrecacheSentenceGroup( "HEV" );
 
 	// These are always needed
-#ifndef TF_DLL
+#if !defined( TF_DLL ) && !defined ( PF2 )
 	PrecacheParticleSystem( "slime_splash_01" );
 	PrecacheParticleSystem( "slime_splash_02" );
 	PrecacheParticleSystem( "slime_splash_03" );

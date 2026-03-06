@@ -628,7 +628,7 @@ void CObjectSpawnroomTurret::DisabledThink()
 	{
 		if( m_iHealth < m_iMaxHealth )
 		{
-			int iHealthToAdd = min( ( m_iMaxHealth / TURRET_DISABLED_TIME - 1 ), m_iMaxHealth - m_iHealth );
+			int iHealthToAdd = MIN( ( m_iMaxHealth / TURRET_DISABLED_TIME - 1 ), m_iMaxHealth - m_iHealth );
 			SetHealth( m_iHealth + iHealthToAdd );
 		}
 

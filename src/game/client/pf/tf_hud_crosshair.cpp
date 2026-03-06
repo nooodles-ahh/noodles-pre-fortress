@@ -112,9 +112,9 @@ bool CHudTFCrosshair::ShouldDraw()
 	// I don't understand why we need two crosshair commands that do the same thing?
 	if ( !cl_drawcrosshair.GetBool() || !crosshair.GetBool() )
 		return false;
-
-#ifdef PF2_CLIENT
-	if ( AffectedByDrawHUD() && !cl_drawhud.GetBool() )
+	
+#if defined( PF2 )
+	if ( !cl_drawhud.GetBool() )
 		return false;
 #endif
 

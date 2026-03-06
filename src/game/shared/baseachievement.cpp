@@ -276,7 +276,11 @@ void CBaseAchievement::SetShowOnHUD( bool bShow )
 void CBaseAchievement::HandleProgressUpdate()
 {
 	// if we've hit the right # of progress steps to show a progress notification, show it
+#if defined( PF2 )
+	if ( ( m_iProgressMsgIncrement > 0 ) && m_iCount >= m_iProgressMsgMinimum )
+#else
 	if ( ( m_iProgressMsgIncrement > 0 ) && m_iCount >= m_iProgressMsgMinimum && ( 0 == ( m_iCount % m_iProgressMsgIncrement ) ) )
+#endif
 	{
 		// which notification is this
 		int iProgress = m_iCount / m_iProgressMsgIncrement;
@@ -384,6 +388,9 @@ void CBaseAchievement::AwardAchievement()
 		return;
 
 	m_pAchievementMgr->AwardAchievement( m_iAchievementID );
+#if defined( PF2 )
+	ShowProgressNotification();
+#endif
 }
 
 //-----------------------------------------------------------------------------

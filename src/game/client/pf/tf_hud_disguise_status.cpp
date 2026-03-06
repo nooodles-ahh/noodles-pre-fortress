@@ -118,7 +118,7 @@ void CDisguiseStatus::Paint()
 
 	if( pLocalPlayer->m_Shared.InCond( TF_COND_DISGUISED ) )
 	{
-		C_TFPlayer *pTarget = ToTFPlayer( pLocalPlayer->m_Shared.GetDisguiseTarget().Get() );
+		C_TFPlayer *pTarget = ToTFPlayer( pLocalPlayer->m_Shared.GetDisguiseTarget() );
 		if( pTarget )
 		{
 			TFPlayerClassData_t *pData = GetPlayerClassData( pLocalPlayer->m_Shared.GetDisguiseClass() );
@@ -178,7 +178,7 @@ void CDisguiseStatus::ShowAndUpdateStatus( void )
 		{
 			m_iClass = pLocalPlayer->m_Shared.GetDisguiseClass();
 			m_iSlot = -1; // we changed class so reset me
-			C_TFPlayer *pTarget = ToTFPlayer( pLocalPlayer->m_Shared.GetDisguiseTarget().Get() );
+			C_TFPlayer *pTarget = ToTFPlayer( pLocalPlayer->m_Shared.GetDisguiseTarget() );
 			if( pTarget )
 			{
 				const char *playerName = pTarget->GetPlayerName();

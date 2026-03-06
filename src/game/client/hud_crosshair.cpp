@@ -26,6 +26,11 @@
 #include "c_portal_player.h"
 #endif // PORTAL
 
+#ifdef PF2_CLIENT
+#include "c_tf_player.h"
+#include "pf_cvars.h"
+#endif
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -36,7 +41,7 @@ using namespace vgui;
 
 int ScreenTransform( const Vector& point, Vector& screen );
 
-#ifdef TF_CLIENT_DLL
+#if defined( TF_CLIENT_DLL ) || defined( PF2 )
 // If running TF, we use CHudTFCrosshair instead (which is derived from CHudCrosshair)
 #else
 DECLARE_HUDELEMENT( CHudCrosshair );
@@ -133,7 +138,7 @@ bool CHudCrosshair::ShouldDraw( void )
 	return ( bNeedsDraw && CHudElement::ShouldDraw() );
 }
 
-#ifdef TF_CLIENT_DLL
+#if defined( TF_CLIENT_DLL ) || defined( PF2 )
 extern ConVar cl_crosshair_red;
 extern ConVar cl_crosshair_green;
 extern ConVar cl_crosshair_blue;
@@ -259,7 +264,7 @@ void CHudCrosshair::Paint( void )
 	}
 
 	float flPlayerScale = 1.0f;
-#ifdef TF_CLIENT_DLL
+#if defined( TF_CLIENT_DLL ) || defined( PF2 )
 	Color clr( cl_crosshair_red.GetInt(), cl_crosshair_green.GetInt(), cl_crosshair_blue.GetInt(), 255 );
 	flPlayerScale = cl_crosshair_scale.GetFloat() / 32.0f;  // the player can change the scale in the options/multiplayer tab
 #else
@@ -271,6 +276,27 @@ void CHudCrosshair::Paint( void )
 	int iHeight = (int)( flHeight + 0.5f );
 	int iX = (int)( x + 0.5f );
 	int iY = (int)( y + 0.5f );
+
+#if defined( PF2 )
+	// Code taken from FF - https://github.com/fortressforever/fortressforever/blob/beta/cl_dll/ff/ff_hud_hitindicator.cpp#L163-L176
+	C_TFPlayer *pTFPlayer = ToTFPlayer( pPlayer );
+
+	if ( pTFPlayer && pTFPlayer->m_Shared.InCond( TF_COND_DIZZY ) && pf_accessibility_concussion.GetBool() )
+	{
+		QAngle angles;
+		Vector forward;
+		Vector point, screen;
+
+		angles = pTFPlayer->EyeAngles() + pTFPlayer->ConcAngles( 9 );
+		AngleVectors( angles, &forward );
+		forward *= 10000.0f;
+		VectorAdd( CurrentViewOrigin(), forward, point );
+		ScreenTransform( point, screen );
+
+		iX = ( screen[0] * 0.5 + 0.5f ) * ScreenWidth();
+		iY = ( 1 - ( screen[1] * 0.5 + 0.5f ) ) * ScreenHeight();
+	}
+#endif
 
 	m_pCrosshair->DrawSelfCropped (
 		iX-(iWidth/2), iY-(iHeight/2),

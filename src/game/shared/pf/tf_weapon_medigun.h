@@ -78,7 +78,7 @@ public:
 	float			GetChargeLevel( void ) { return m_flChargeLevel; }
 	void			AddCharge( float flChargeAmount ) 
 	{ 
-		m_flChargeLevel = min( m_flChargeLevel + flChargeAmount, 1.0 );
+		m_flChargeLevel = min( m_flChargeLevel + flChargeAmount, 1.0f );
 	}
 
 private:

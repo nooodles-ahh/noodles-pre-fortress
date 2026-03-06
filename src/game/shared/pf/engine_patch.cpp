@@ -171,7 +171,7 @@ void CEngineBinary::PostInit()
   if (!engine->IsDedicatedServer())
 #endif
   {
-      ApplyAllPatches();
+      //ApplyAllPatches();
   }
 #endif//!OSX
 }

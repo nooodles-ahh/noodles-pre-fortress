@@ -99,6 +99,8 @@ public:
 
 	virtual void		CommitSuicide( bool bExplode = false, bool bForce = false );
 
+	virtual void		PlayerUse( void );
+
 	// Combats
 	virtual void		TraceAttack( const CTakeDamageInfo &info, const Vector &vecDir, trace_t *ptr, CDmgAccumulator *pAccumulator );
 	virtual int			TakeHealth( float flHealth, int bitsDamageType );
@@ -569,7 +571,7 @@ private:
 
 	CHandle< CTFWeaponBuilder > m_hWeaponBuilder;
 
-	CUtlVector<EHANDLE>	m_aObjects;			// List of player objects
+	CUtlVector<CHandle<CBaseObject>>	m_aObjects;			// List of player objects
 
 	bool m_bIsClassMenuOpen;
 

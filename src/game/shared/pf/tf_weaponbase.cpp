@@ -1160,7 +1160,7 @@ bool CTFWeaponBase::Ready(void)
 	
 	// Prevent firing until our weapon is back up
 	CTFPlayer *pPlayer = GetTFPlayerOwner();
-	pPlayer->m_flNextAttack = gpGlobals->curtime + min(SequenceDuration(), 0.67);
+	pPlayer->m_flNextAttack = gpGlobals->curtime + MIN(SequenceDuration(), 0.67);
 	return true;
 }
 
@@ -1183,7 +1183,7 @@ bool CTFWeaponBase::Lower( void )
 
 	m_bLowered = true;
 	SendWeaponAnim( ACT_VM_IDLE_LOWERED );
-	SetWeaponIdleTime( gpGlobals->curtime + min(SequenceDuration( sequence ), 0.67) );
+	SetWeaponIdleTime( gpGlobals->curtime + MIN(SequenceDuration( sequence ), 0.67) );
 
 	
 	if( pModel )
@@ -2347,7 +2347,7 @@ acttable_t* CTFWeaponBase::ActivityList(int& iActivityCount)
 		break;
 	case TF_WPN_TYPE_ITEM3:
 		pTable = m_acttableItem3;
-		iActivityCount = ARRAYSIZE(m_acttableItem3);
+		iActivityCount = ARRAYSIZE( m_acttableItem3 );
 		break;
 	case TF_WPN_TYPE_ITEM4:
 		pTable = m_acttableItem4;
@@ -2462,7 +2462,7 @@ float CalcViewModelBobHelper( CBasePlayer *player, BobState_t *pBobState )
 
 	//Find the speed of the player
 	float speed = player->GetLocalVelocity().Length2D();
-	float flmaxSpeedDelta = max( 0, (gpGlobals->curtime - pBobState->m_flLastBobTime ) * 320.0f );
+	float flmaxSpeedDelta = MAX( 0, (gpGlobals->curtime - pBobState->m_flLastBobTime ) * 320.0f );
 
 	// don't allow too big speed changes
 	speed = clamp( speed, pBobState->m_flLastSpeed-flmaxSpeedDelta, pBobState->m_flLastSpeed+flmaxSpeedDelta );

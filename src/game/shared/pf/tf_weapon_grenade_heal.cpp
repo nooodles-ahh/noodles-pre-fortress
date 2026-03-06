@@ -200,7 +200,7 @@ void CTFGrenadeHealProjectile::Detonate()
 			pPlayer->m_Shared.RemoveCond( TF_COND_TRANQUILIZED );
 
 			int iHealthNeeded = pPlayer->GetMaxHealth() - pPlayer->GetHealth();
-			int iHealthIncreased = min( iHealthNeeded, flHealAmount );
+			int iHealthIncreased = min( iHealthNeeded, int(flHealAmount) );
 			pPlayer->TakeHealth( iHealthIncreased, DMG_GENERIC );
 
 			CTF_GameStats.Event_PlayerHealedOther( pThrower, iHealthIncreased, false );

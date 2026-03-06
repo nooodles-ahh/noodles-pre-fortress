@@ -119,7 +119,7 @@ private:
 	char			m_szCurrentMap[MAX_MAP_NAME];
 
 	vgui::HFont		m_hHeaderFont;
-#ifdef TF_CLIENT_DLL
+#if defined( TF_CLIENT_DLL ) || defined( PF2 )
 	vgui::HFont		m_hPlayerNameFont;
 	vgui::HFont		m_hRowFont;
 #endif // TF_CLIENT_DLL

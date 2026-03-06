@@ -63,6 +63,10 @@ void CTakeDamageInfo::Init( CBaseEntity *pInflictor, CBaseEntity *pAttacker, CBa
 	m_bForceFriendlyFire = false;
 	m_flDamageForForce = 0.f;
 	m_eCritType = CRIT_NONE;
+#if defined( PF2 )
+	m_flArmorRemoved = 0.0f;
+	m_bIgnoreArmor = false;
+#endif
 }
 
 CTakeDamageInfo::CTakeDamageInfo()
@@ -247,6 +251,10 @@ void AddMultiDamage( const CTakeDamageInfo &info, CBaseEntity *pEntity )
 	g_MultiDamage.SetMaxDamage( MAX( g_MultiDamage.GetMaxDamage(), info.GetDamage() ) );
 	g_MultiDamage.SetAmmoType( info.GetAmmoType() );
 	g_MultiDamage.SetCritType( info.GetCritType() );
+#if defined( PF2 )
+	g_MultiDamage.SetArmorRemoved( g_MultiDamage.GetArmorRemoved() + info.GetArmorRemoved() );
+	g_MultiDamage.SetIgnoreArmor( info.IgnoreArmor() );
+#endif
 
 	if ( g_MultiDamage.GetPlayerPenetrationCount() == 0 )
 	{

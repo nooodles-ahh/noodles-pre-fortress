@@ -6,10 +6,8 @@
 #include <vgui_controls/ImagePanel.h>
 #include <vgui_controls/Button.h>
 #include <vgui/ISurface.h>
-#include "pf_discord_rpc.h"
 #include <vgui_controls/AnimationController.h>
 #include "pf_music_system.h"
-#include "pf_discord_rpc.h"
 
 using namespace vgui;
 /*

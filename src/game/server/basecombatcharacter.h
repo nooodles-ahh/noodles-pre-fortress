@@ -214,7 +214,11 @@ public:
 	int					GiveAmmo( int iCount, const char *szName, bool bSuppressSound = false );
 	virtual void		RemoveAmmo( int iCount, int iAmmoIndex );
 	virtual void		RemoveAmmo( int iCount, const char *szName );
+#if defined( PF2 )
+	virtual void		RemoveAllAmmo( );
+#else
 	void				RemoveAllAmmo( );
+#endif
 	virtual int			GetAmmoCount( int iAmmoIndex ) const;
 	int					GetAmmoCount( char *szName ) const;
 

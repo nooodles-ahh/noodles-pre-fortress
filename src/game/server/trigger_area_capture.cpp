@@ -13,6 +13,13 @@
 #include "team_objectiveresource.h"
 #include "team_control_point_master.h"
 #include "teamplayroundbased_gamerules.h"
+#if defined( PF2 )
+#include "tf_player.h"
+#include "tf_item.h"
+#include "entity_capture_flag.h"
+#include "tf_gamerules.h"
+#include "pf_cvars.h"
+#endif
 
 extern ConVar mp_capstyle;
 extern ConVar mp_blockstyle;
@@ -436,7 +443,9 @@ void CTriggerAreaCapture::CaptureThink( void )
 	{
 		if ( m_bCapturing && iTeamsInZone > 1 )
 		{
+#if !defined( PF2 )
 			bBlocked = true;
+#endif
 
 			for ( int i = FIRST_GAME_TEAM; i < GetNumberOfTeams(); i++ )
 			{
@@ -632,6 +641,13 @@ void CTriggerAreaCapture::CaptureThink( void )
 				}
 			}
 		}
+
+#if defined( PF2 )
+		if ( m_hPoint->m_bNeedsFlag && m_hPoint->m_bInstantFlagCap )
+		{
+			EndCapture( m_nCapturingTeam );
+		}
+#endif
 	}
 	else	
 	{
@@ -678,10 +694,12 @@ void CTriggerAreaCapture::SetCapTimeRemaining( float flTime )
 
 	ObjectiveResource()->SetCPCapPercentage( m_hPoint->GetPointIndex(), flCapPercentage );
 
+#if !defined( PF2 )
 	if ( m_hPoint )
 	{
 		m_hPoint->UpdateCapPercentage();
 	}
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -892,6 +910,33 @@ void CTriggerAreaCapture::EndCapture( int team )
 	//he hasn't gotten points yet, and his name will go in the cap string if its needed
 	//first capper gets name sent and points given by flag.
 	//other cappers get points manually above, no name in message
+#if defined( PF2 )
+	if ( m_hPoint->m_bNeedsFlag )
+	{
+		for ( int i = 0; i < MAX_AREA_CAPPERS; i++ )
+		{
+			CBaseEntity *ent = UTIL_PlayerByIndex( cappingplayers[i] );
+			if ( ent )
+			{
+				CTFPlayer *pTFCappingPlayer = ToTFPlayer( ent );
+
+				if ( pTFCappingPlayer->HasItem() )
+				{
+					CTFItem *pItem = pTFCappingPlayer->GetItem();
+					if ( pItem->GetItemID() == TF_ITEM_CAPTURE_FLAG )
+					{
+						CCaptureFlag *pFlag = dynamic_cast<CCaptureFlag *>( pTFCappingPlayer->GetItem() );
+						if ( pFlag )
+						{
+							pFlag->Capture( pTFCappingPlayer, m_hPoint.Get()->GetPointIndex(), true );
+							break;
+						}
+					}
+				}
+			}
+		}
+	}
+#endif
 
 	//send the player in the cap string
 	if( m_hPoint )

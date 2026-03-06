@@ -273,13 +273,8 @@ void CTFStatsSummaryPanel::ApplySchemeSettings(vgui::IScheme *pScheme)
 
 	SetDefaultSelections();
 	UpdateDialog();
-#ifdef PF2BETA
 	if(!m_bIsEmbedded)
 		SetVisible( false );
-#else
-	SetVisible( true );
-#endif
-
 }
 
 //-----------------------------------------------------------------------------

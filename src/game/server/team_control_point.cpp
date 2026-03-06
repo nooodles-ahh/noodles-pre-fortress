@@ -15,7 +15,7 @@
 #include "engine/IEngineSound.h"
 #include "soundenvelope.h"
 
-#ifdef TF_DLL
+#if defined( TF_DLL ) || defined( PF2 )
 #include "tf_shareddefs.h"
 #include "tf_gamerules.h"
 #endif
@@ -36,6 +36,12 @@ BEGIN_DATADESC(CTeamControlPoint)
 	DEFINE_KEYFIELD( m_iszCaptureInterrupted,	FIELD_STRING,	"point_capture_interrupted_sound" ),
 	DEFINE_KEYFIELD( m_bRandomOwnerOnRestart,	FIELD_BOOLEAN,	"random_owner_on_restart" ),
 	DEFINE_KEYFIELD( m_bLocked,					FIELD_BOOLEAN,	"point_start_locked" ),
+
+#if defined( PF2 )
+	DEFINE_KEYFIELD( m_bNeedsFlag, FIELD_BOOLEAN, "needs_flag" ),
+	DEFINE_KEYFIELD( m_bInstantFlagCap, FIELD_BOOLEAN, "instant_flag_cap" ),
+	DEFINE_KEYFIELD( m_bCivilianGoal, FIELD_BOOLEAN, "civilian_goal" ),
+#endif
 
 	DEFINE_FUNCTION( UnlockThink ),
 
@@ -71,6 +77,14 @@ BEGIN_DATADESC(CTeamControlPoint)
 	DEFINE_THINKFUNC( AnimThink ),
 END_DATADESC();
 
+#if defined( PF2 )
+IMPLEMENT_SERVERCLASS_ST( CTeamControlPoint, DT_TeamControlPoint )
+	SendPropBool( SENDINFO( m_bActive ) ),
+	SendPropInt( SENDINFO( m_iPointIndex ) ),
+	SendPropInt( SENDINFO( m_iTeam ) ),
+END_SEND_TABLE()
+#endif
+
 LINK_ENTITY_TO_CLASS( team_control_point, CTeamControlPoint );
 
 //-----------------------------------------------------------------------------
@@ -85,7 +99,12 @@ CTeamControlPoint::CTeamControlPoint()
 	m_flUnlockTime = -1;
 	m_bBotsIgnore = false;
 
-#ifdef  TF_DLL
+#if defined( PF2 )
+	m_bInstantFlagCap = true;
+	m_bNeedsFlag = false;
+#endif
+
+#if defined( TF_DLL ) || defined( PF2 )
 	UseClientSideAnimation();
 #endif
 }
@@ -102,7 +121,7 @@ void CTeamControlPoint::Spawn( void )
 		m_iDefaultOwner = TEAM_UNASSIGNED;
 	}
 
-#ifdef TF_DLL
+#if defined( TF_DLL ) || defined( PF2 )
 	if ( m_iszCaptureStartSound == NULL_STRING )
 	{
 		m_iszCaptureStartSound = AllocPooledString( "Hologram.Start" );
@@ -130,9 +149,11 @@ void CTeamControlPoint::Spawn( void )
 
 	BaseClass::Spawn();
 
+#if !defined( PF2 )
 	SetPlaybackRate( 1.0 );
 	SetThink( &CTeamControlPoint::AnimThink );
 	SetNextThink( gpGlobals->curtime + 0.1f );
+#endif
 
 	if ( FBitSet( m_spawnflags, SF_CAP_POINT_HIDE_MODEL ) )
 	{
@@ -271,7 +292,7 @@ void CTeamControlPoint::Precache( void )
 		PrecacheScriptSound( STRING( m_iszWarnSound ) );
 	}
 
-#ifdef TF_DLL
+#if defined( TF_DLL ) || defined( PF2 )
 	PrecacheScriptSound( "Announcer.ControlPointContested" );
 	PrecacheScriptSound( "Announcer.ControlPointContested_Neutral" );
 #endif
@@ -311,7 +332,7 @@ void CTeamControlPoint::HandleScoring( int iTeam )
 		CTeamControlPointMaster *pMaster = g_hControlPointMasters.Count() ? g_hControlPointMasters[0] : NULL;
 		if ( pMaster && !pMaster->WouldNewCPOwnerWinGame( this, iTeam ) )
 		{
-#ifdef TF_DLL
+#if defined( TF_DLL ) || defined( PF2 )
 			if ( TeamplayRoundBasedRules()->GetGameType() == TF_GAMETYPE_ESCORT )
 			{
 				CBroadcastRecipientFilter filter;
@@ -583,8 +604,10 @@ void CTeamControlPoint::InternalSetOwner( int iCapTeam, bool bMakeSound, int iNu
 
 	// Update visuals
 	SetModel( STRING(m_TeamData[m_iTeam].iszModel) );
+#if !defined( PF2 )
 	SetBodygroup( 0, m_iTeam );
 	m_nSkin = ( m_iTeam == TEAM_UNASSIGNED ) ? 2 : (m_iTeam - 2);
+#endif
 	ResetSequence( LookupSequence("idle") );
 
 	// We add 1 to the index because we consider the default "no points capped" as 0.
@@ -600,13 +623,18 @@ void CTeamControlPoint::InternalSetOwner( int iCapTeam, bool bMakeSound, int iNu
 		if ( GetModelPtr() && GetModelPtr()->SequencesAvailable() )
 		{
 			m_TeamData[i].iTeamPoseParam = LookupPoseParameter( UTIL_VarArgs( "cappoint_%d_percentage", i ) );
+#if defined( PF2 )
+			m_TeamData[i].iModelBodygroup = FindBodygroupByName( UTIL_VarArgs( "cappoint_%d_bodygroup", i ) );
+#endif
 		}
 		else
 		{
 			m_TeamData[i].iTeamPoseParam = -1;
 		}
 	}
+#if !defined( PF2 )
 	UpdateCapPercentage();
+#endif
 
 	if ( m_iTeam == TEAM_UNASSIGNED )
 	{
@@ -1084,6 +1112,17 @@ void CTeamControlPoint::InputSetUnlockTime( inputdata_t &inputdata )
 //-----------------------------------------------------------------------------
 void CTeamControlPoint::UnlockThink( void )
 {
+#if defined( PF2 )
+	if ( m_flUnlockTime > 0 && m_flUnlockTime < gpGlobals->curtime && TeamplayRoundBasedRules() )
+	{
+		if ( ( TeamplayGameRules()->GetGameType() == TF_GAMETYPE_ARENA && TeamplayRoundBasedRules()->State_Get() == GR_STATE_STALEMATE )
+			|| ( TeamplayRoundBasedRules()->State_Get() == GR_STATE_RND_RUNNING ) )
+		{
+			InternalSetLocked( false );
+			return;
+		}
+	}
+#else
 	if ( m_flUnlockTime > 0 && 
 		 m_flUnlockTime < gpGlobals->curtime && 
 		 ( TeamplayRoundBasedRules() && TeamplayRoundBasedRules()->State_Get() == GR_STATE_RND_RUNNING ) )
@@ -1091,6 +1130,14 @@ void CTeamControlPoint::UnlockThink( void )
 		InternalSetLocked( false );
 		return;
 	}
+#endif
 
 	SetContextThink( &CTeamControlPoint::UnlockThink, gpGlobals->curtime + 0.1, CONTROL_POINT_UNLOCK_THINK );
 }
+
+#if defined( PF2 )
+bool CTeamControlPoint::NeedsFlag()
+{
+	return m_bNeedsFlag;
+}
+#endif

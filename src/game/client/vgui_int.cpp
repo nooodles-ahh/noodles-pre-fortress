@@ -24,6 +24,14 @@
 #include "filesystem.h"
 #include "matsys_controls/matsyscontrols.h"
 
+#if defined( PF2 )
+#include "toolframework_client.h"
+#include "panels/pf_charinfopanel.h"
+#include "pf_mainmenu_override.h"
+#include "ioverrideinterface.h"
+#include "tier0/icommandline.h"
+#endif
+
 #ifdef SIXENSE
 #include "sixense/in_sixense.h"
 #endif
@@ -36,6 +44,10 @@ using namespace vgui;
 
 void MP3Player_Create( vgui::VPANEL parent );
 void MP3Player_Destroy();
+
+#if defined( PF2 )
+void OverrideGameUI();
+#endif
 
 #include <vgui/IInputInternal.h>
 vgui::IInputInternal *g_InputInternal = NULL;
@@ -204,6 +216,16 @@ void VGui_CreateGlobalPanels( void )
 	internalCenterPrint->Create( gameToolParent );
 	loadingdisc->Create( gameToolParent );
 	messagechars->Create( gameToolParent );
+
+#if defined( PF2 )
+	if ( !CommandLine()->CheckParm( "-oldui" ) && !ToolsEnabled() )
+	{
+		OverrideUI->Create( NULL );
+		OverrideGameUI();
+	}
+
+	CreatePFInventoryPanel();
+#endif
 
 	// Debugging or related tool
 	fps->Create( toolParent );

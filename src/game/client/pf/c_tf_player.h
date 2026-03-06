@@ -448,6 +448,8 @@ public:
 
 	int				m_nForceTauntCam;
 
+	CNetworkVar( bool, m_bFlipViewModels );
+
 private:
 
 	float m_flWaterImpactTime;

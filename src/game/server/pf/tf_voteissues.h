@@ -22,7 +22,7 @@
 class CBaseTFIssue : public CBaseIssue // Base class concept for vote issues (i.e. Kick Player).  Created per level-load and destroyed by CVoteController's dtor.
 {
 public:
-	CBaseTFIssue( const char* pszName ) : CBaseIssue( pszName ) { }
+	CBaseTFIssue( const char* pszName, CVoteController *pVoteController ) : CBaseIssue( pszName, pVoteController ) { }
 
 	virtual void		ExecuteCommand( void );						// Where the magic happens.  Do your thing.
 	virtual void		ListIssueDetails( CBasePlayer *pForWhom );	// Someone would like to know all your valid details
@@ -32,7 +32,7 @@ class CKickIssue : public CBaseTFIssue
 {
 public:
 	virtual bool		IsEnabled( void );							// Query the issue to see if it's enabled
-	virtual bool		CanCallVote( int nEntIndex, const char *pszDetails, vote_create_failed_t &nFailCode, int &nTime ); // Can this guy hold a vote on this issue?
+	virtual bool		RequestCallVote( int nEntIndex, const char *pszDetails, vote_create_failed_t &nFailCode, int &nTime ); // Can this guy hold a vote on this issue?
 	virtual bool		IsTeamRestrictedVote() { return true; }
 	virtual const char	*GetDetailsString( void );
 	virtual const char *GetDisplayString( void );					// The string that will be passed to the client for display
@@ -40,7 +40,7 @@ public:
 	virtual const char *GetVotePassedString( void );				// Get the string an issue would like to display whenit passes.
 	virtual void		SetIssueDetails( const char *pszDetails );
 
-	CKickIssue() : CBaseTFIssue( "Kick" ) { }
+	CKickIssue( CVoteController *pVoteController ) : CBaseTFIssue( "Kick", pVoteController ) { }
 	CUtlString m_szNetworkIDString;
 };
 
@@ -53,7 +53,7 @@ public:
 	virtual void		ExecuteCommand( void );						// Where the magic happens.  Do your thing.
 	virtual const char *GetVotePassedString( void );				// Get the string an issue would like to display whenit passes.
 
-	CRestartGameIssue() : CBaseTFIssue( "RestartGame" ) { }
+	CRestartGameIssue( CVoteController *pVoteController ) : CBaseTFIssue( "RestartGame", pVoteController ) { }
 };
 
 class CScrambleTeams : public CBaseTFIssue
@@ -65,7 +65,7 @@ public:
 	virtual void		ExecuteCommand( void );						// Where the magic happens.  Do your thing.
 	virtual const char *GetVotePassedString( void );				// Get the string an issue would like to display whenit passes.
 
-	CScrambleTeams() : CBaseTFIssue( "ScrambleTeams" ) { }
+	CScrambleTeams( CVoteController *pVoteController ) : CBaseTFIssue( "ScrambleTeams", pVoteController ) { }
 };
 
 class CChangeLevelIssue : public CBaseTFIssue
@@ -75,23 +75,23 @@ public:
 	virtual const char *GetDisplayString( void );					// The string that will be passed to the client for display
 	virtual void		ExecuteCommand( void );						// Where the magic happens.  Do your thing.
 	virtual const char *GetVotePassedString( void );				// Get the string an issue would like to display whenit passes.
-	virtual bool		CanCallVote( int nEntIndex, const char *pszDetails, vote_create_failed_t &nFailCode, int &nTime ); // Can this guy hold a vote on this issue?
+	virtual bool		RequestCallVote( int nEntIndex, const char *pszDetails, vote_create_failed_t &nFailCode, int &nTime ); // Can this guy hold a vote on this issue?
 
-	CChangeLevelIssue() : CBaseTFIssue( "ChangeLevel" ) { }
+	CChangeLevelIssue( CVoteController *pVoteController ) : CBaseTFIssue( "ChangeLevel", pVoteController ) { }
 };
 
 class CNextLevelIssue : public CBaseTFIssue
 {
 public:
 	virtual bool		IsEnabled( void );							// Query the issue to see if it's enabled
-	virtual bool		CanCallVote( int nEntIndex, const char *pszDetails, vote_create_failed_t &nFailCode, int &nTime );
+	virtual bool		RequestCallVote( int nEntIndex, const char *pszDetails, vote_create_failed_t &nFailCode, int &nTime );
 	virtual const char *GetDisplayString( void );					// The string that will be passed to the client for display
 	virtual void		ExecuteCommand( void );						// Where the magic happens.  Do your thin
 	virtual const char *GetVotePassedString( void );				// Get the string an issue would like to display whenit passes.
 	virtual bool		IsYesNoVote( void );
 	virtual bool        GetVoteOptions( CUtlVector <const char*> &vecNames );	// We use this to generate options for votingg.
 
-	CNextLevelIssue() : CBaseTFIssue( "NextLevel" ) { }
+	CNextLevelIssue( CVoteController *pVoteController ) : CBaseTFIssue( "NextLevel", pVoteController ) { }
 };
 
 class CExtendLevelIssue : public CBaseTFIssue
@@ -102,7 +102,7 @@ public:
 	virtual void		ExecuteCommand(void);						// Where the magic happens.  Do your thing.
 	virtual const char* GetVotePassedString(void);				// Get the string an issue would like to display whenit passes.
 
-	CExtendLevelIssue() : CBaseTFIssue("ExtendLevel") { }
+	CExtendLevelIssue( CVoteController *pVoteController ) : CBaseTFIssue("ExtendLevel", pVoteController ) { }
 };
 
 #endif // VOTE_CONTROLLER_H

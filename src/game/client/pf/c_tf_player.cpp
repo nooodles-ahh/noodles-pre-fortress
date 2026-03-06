@@ -239,8 +239,8 @@ public:
 		if( m_iPlayerIndex == TF_PLAYER_INDEX_NONE )
 			return;
 
-		EHANDLE hPlayer = cl_entitylist->GetNetworkableHandle( m_iPlayerIndex );
-		if( !hPlayer )
+		CBaseHandle hPlayer = cl_entitylist->GetNetworkableHandle( m_iPlayerIndex );
+		if( !hPlayer.IsValid() )
 			return;
 
 		C_TFPlayer *pPlayer = dynamic_cast< C_TFPlayer* >(hPlayer.Get());
@@ -305,11 +305,12 @@ public:
 	void StartFadeOut( float fDelay );
 	void EndFadeOut();
 
-	EHANDLE GetPlayerHandle( void )
+	C_BaseEntity* GetPlayerFromHandle( void )
 	{
 		if( m_iPlayerIndex == TF_PLAYER_INDEX_NONE )
-			return NULL;
-		return cl_entitylist->GetNetworkableHandle( m_iPlayerIndex );
+			return nullptr;
+
+		return cl_entitylist->GetBaseEntity( m_iPlayerIndex );
 	}
 
 	bool IsRagdollVisible();
@@ -421,14 +422,14 @@ void C_TFRagdoll::Interp_Copy( C_BaseAnimatingOverlay *pSourceEntity )
 void C_TFRagdoll::SetupWeights( const matrix3x4_t *pBoneToWorld, int nFlexWeightCount, float *pFlexWeights, float *pFlexDelayedWeights )
 {
 	// While we're dying, we want to mimic the facial animation of the player. Once they're dead, we just stay as we are.
-	EHANDLE hPlayer = GetPlayerHandle();
-	if( (hPlayer && hPlayer->IsAlive()) || !hPlayer )
+	C_BaseEntity *pPlayer = GetPlayerFromHandle();
+	if( ( pPlayer && pPlayer->IsAlive()) || !pPlayer )
 	{
 		BaseClass::SetupWeights( pBoneToWorld, nFlexWeightCount, pFlexWeights, pFlexDelayedWeights );
 	}
-	else if( hPlayer )
+	else if( pPlayer )
 	{
-		hPlayer->SetupWeights( pBoneToWorld, nFlexWeightCount, pFlexWeights, pFlexDelayedWeights );
+		pPlayer->SetupWeights( pBoneToWorld, nFlexWeightCount, pFlexWeights, pFlexDelayedWeights );
 	}
 }
 
@@ -517,10 +518,10 @@ void C_TFRagdoll::CreateTFRagdoll()
 {
 	// Get the player.
 	C_TFPlayer *pPlayer = NULL;
-	EHANDLE hPlayer = GetPlayerHandle();
-	if( hPlayer )
+	C_BaseEntity *pBaseEntity = GetPlayerFromHandle();
+	if( pBaseEntity )
 	{
-		pPlayer = dynamic_cast<C_TFPlayer*>(hPlayer.Get());
+		pPlayer = dynamic_cast<C_TFPlayer*>( pBaseEntity );
 	}
 
 	TFPlayerClassData_t *pData = GetPlayerClassData( m_iClass );
@@ -698,10 +699,10 @@ void C_TFRagdoll::CreateTFRagdoll()
 void C_TFRagdoll::CreateTFGibs( void )
 {
 	C_TFPlayer *pPlayer = NULL;
-	EHANDLE hPlayer = GetPlayerHandle();
-	if( hPlayer )
+	C_BaseEntity *pBaseEntity = GetPlayerFromHandle();
+	if( pBaseEntity )
 	{
-		pPlayer = dynamic_cast<C_TFPlayer*>(hPlayer.Get());
+		pPlayer = dynamic_cast<C_TFPlayer*>( pBaseEntity );
 	}
 	if( pPlayer && (pPlayer->m_hFirstGib == NULL) )
 	{
@@ -733,13 +734,13 @@ void C_TFRagdoll::OnDataChanged( DataUpdateType_t type )
 		bool bCreateRagdoll = true;
 
 		// Get the player.
-		EHANDLE hPlayer = GetPlayerHandle();
-		if( hPlayer )
+		C_BaseEntity *pBaseEntity = GetPlayerFromHandle();
+		if( pBaseEntity )
 		{
 			// If we're getting the initial update for this player (e.g., after resetting entities after
 			//  lots of packet loss, then don't create gibs, ragdolls if the player and it's gib/ragdoll
 			//  both show up on same frame.
-			if( abs( hPlayer->GetCreationTick() - gpGlobals->tickcount ) < TIME_TO_TICKS( 1.0f ) )
+			if( abs( pBaseEntity->GetCreationTick() - gpGlobals->tickcount ) < TIME_TO_TICKS( 1.0f ) )
 			{
 				bCreateRagdoll = false;
 			}
@@ -818,7 +819,7 @@ void C_TFRagdoll::ClientThink( void )
 		int iAlpha = GetRenderColor().a;
 		int iFadeSpeed = 600.0f;
 
-		iAlpha = max( iAlpha - (iFadeSpeed * gpGlobals->frametime), 0 );
+		iAlpha = MAX( iAlpha - (iFadeSpeed * gpGlobals->frametime), 0 );
 
 		SetRenderMode( kRenderTransAlpha );
 		SetRenderColorA( iAlpha );

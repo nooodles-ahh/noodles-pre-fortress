@@ -94,7 +94,11 @@ static void WriteAchievementGlobalState( KeyValues *pKV, bool bPersistToSteamClo
 	}
 	else
 	{
+#if defined( PF2 )
+		Q_snprintf( szFilename, sizeof( szFilename ), "gamestate.txt" );
+#else
 		Q_snprintf( szFilename, sizeof( szFilename ), "GameState.txt" );
+#endif
 	}
 
 	// Never call pKV->SaveToFile!!!!
@@ -118,7 +122,11 @@ static void WriteAchievementGlobalState( KeyValues *pKV, bool bPersistToSteamClo
         }
         else
         {
-            Q_snprintf( szFilename, sizeof( szFilename ), "GameState.txt" );
+#if defined( PF2 )
+			Q_snprintf( szFilename, sizeof( szFilename ), "gamestate.txt" );
+#else
+			Q_snprintf( szFilename, sizeof( szFilename ), "GameState.txt" );
+#endif
         }
 
         ISteamRemoteStorage *pRemoteStorage = SteamClient()?(ISteamRemoteStorage *)SteamClient()->GetISteamGenericInterface(
@@ -248,7 +256,7 @@ CAchievementMgr::CAchievementMgr( SteamCloudPersisting ePersistToSteamCloud ) : 
 // HPE_END
 //=============================================================================
 
-#if !defined(NO_STEAM)
+#if !defined(NO_STEAM) && !defined( PF2 )
 , m_CallbackUserStatsReceived( this, &CAchievementMgr::Steam_OnUserStatsReceived ),
 m_CallbackUserStatsStored( this, &CAchievementMgr::Steam_OnUserStatsStored )
 #endif
@@ -314,7 +322,7 @@ bool CAchievementMgr::Init()
 	usermessages->HookMessage( "AchievementEvent", MsgFunc_AchievementEvent );
 #endif // CLIENT_DLL
 
-#ifdef TF_CLIENT_DLL
+#if defined( TF_CLIENT_DLL ) || defined( PF2_CLIENT )
 	ListenForGameEvent( "localplayer_changeclass" );
 	ListenForGameEvent( "localplayer_changeteam" );
 	ListenForGameEvent( "teamplay_round_start" );	
@@ -746,7 +754,11 @@ void CAchievementMgr::LoadGlobalState()
 	}
 	else
 	{
+#if defined( PF2 )
+		Q_snprintf( szFilename, sizeof( szFilename ), "gamestate.txt" );
+#else
 		Q_snprintf( szFilename, sizeof( szFilename ), "GameState.txt" );
+#endif
 	}
 
     //=============================================================================
@@ -943,7 +955,7 @@ void CAchievementMgr::AwardAchievement( int iAchievementID )
 
 	if ( IsPC() )
 	{		
-#ifndef NO_STEAM
+#if !defined(NO_STEAM) && !defined(PF2)
 		if ( steamapicontext->SteamUserStats() )
 		{
 			VPROF_BUDGET( "AwardAchievement", VPROF_BUDGETGROUP_STEAM );
@@ -953,6 +965,30 @@ void CAchievementMgr::AwardAchievement( int iAchievementID )
 			if ( bRet )
 			{
 				m_AchievementsAwarded.AddToTail( iAchievementID );
+			}
+		}
+#elif defined( PF2_CLIENT )
+		// not required but might want unlock time in the future
+		if ( steamapicontext && steamapicontext->SteamUtils() )
+		{
+			if ( g_pGameRules && g_pGameRules->IsMultiplayer() )
+			{
+				C_BasePlayer *pLocalPlayer = C_BasePlayer::GetLocalPlayer();
+				if ( pLocalPlayer )
+				{
+					CBaseAchievement *pAchievement = GetAchievementByID( iAchievementID );
+
+					// verify that it is still achieved (it could have been rejected by Steam)
+					if ( pAchievement->IsAchieved() )
+					{
+						uint32 unlocktime = steamapicontext->SteamUtils()->GetServerRealTime();
+						pAchievement->SetUnlockTime( unlocktime );
+
+						KeyValues *kv = new KeyValues( "AchievementEarned" );
+						kv->SetInt( "achievementID", iAchievementID );
+						engine->ServerCmdKeyValues( kv );
+					}
+				}
 			}
 		}
 #endif
@@ -1663,7 +1699,7 @@ int CAchievementMgr::GetAchievementCount()
 }
 
 
-#if !defined(NO_STEAM)
+#if !defined(NO_STEAM) && !defined( PF2 )
 //-----------------------------------------------------------------------------
 // Purpose: called when stat download is complete
 //-----------------------------------------------------------------------------

@@ -110,7 +110,7 @@ public:
 
 	bool WereCheatsEverOn( void ) { return m_bCheatsEverOn; }
 
-#if !defined(NO_STEAM)
+#if !defined(NO_STEAM) && !defined( PF2 )
 	STEAM_CALLBACK( CAchievementMgr, Steam_OnUserStatsReceived, UserStatsReceived_t, m_CallbackUserStatsReceived );
 	STEAM_CALLBACK( CAchievementMgr, Steam_OnUserStatsStored, UserStatsStored_t, m_CallbackUserStatsStored );
 #endif

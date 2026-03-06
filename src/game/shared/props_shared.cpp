@@ -18,6 +18,10 @@
 #include "gamestringpool.h"
 #endif
 
+#if defined( PF2_CLIENT )
+#include "ragdoll.h"
+#endif
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -27,7 +31,12 @@ ConVar props_break_max_pieces_perframe( "props_break_max_pieces_perframe", "-1",
 #ifdef GAME_DLL
 extern ConVar breakable_multiplayer;
 #else
+#ifdef PF2
+ConVar cl_burninggibs( "cl_burninggibs", "0", FCVAR_DONTRECORD | FCVAR_ARCHIVE, "A burning player that gibs has burning gibs." );
+ConVar cl_force_burninggibs( "cl_force_burninggibs", "0", FCVAR_CHEAT );
+#else
 ConVar cl_burninggibs( "cl_burninggibs", "0", 0, "A burning player that gibs has burning gibs." );
+#endif
 #endif // GAME_DLL
 
 extern bool PropBreakableCapEdictsOnCreateAll(int modelindex, IPhysicsObject *pPhysics, const breakablepropparams_t &params, CBaseEntity *pEntity, int iPrecomputedBreakableCount = -1 );
@@ -793,7 +802,11 @@ void CGameGibManager::Activate( void )
 	m_LRU.Purge();
 
 	// Cache off the DX level for use later.
+#if defined( PF2 )
+	ConVarRef mat_dxlevel( "mat_dxlevel", true );
+#else
 	ConVarRef mat_dxlevel( "mat_dxlevel" );
+#endif
 	m_iDXLevel = mat_dxlevel.GetInt();
 
 	UpdateMaxPieces();
@@ -1505,9 +1518,15 @@ CBaseEntity *CreateGibsFromList( CUtlVector<breakmodel_t> &list, int modelindex,
 					GetGibManager()->AddGibToLRU( pBreakable->GetBaseAnimating() );
 				}
 #endif
-
+#if defined( PF2_CLIENT )
+				NoteRagdollCreationTick( pBreakable );
+#endif
 #ifndef GAME_DLL
+#if defined( PF2 )
+				if ( cl_force_burninggibs.GetBool() || ( bBurning && cl_burninggibs.GetBool() ) )
+#else
 				if ( bBurning && cl_burninggibs.GetBool() )
+#endif
 				{
 					pBreakable->ParticleProp()->Create( "burninggibs", PATTACH_POINT_FOLLOW, "bloodpoint" );
 				}

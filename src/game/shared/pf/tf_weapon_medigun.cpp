@@ -599,7 +599,7 @@ bool CWeaponMedigun::FindAndHealTargets( void )
 						flChargeAmount /= (float)iTotalHealers;
 					}
 
-					float flNewLevel = min( m_flChargeLevel + flChargeAmount, 1.0 );
+					float flNewLevel = min( m_flChargeLevel + flChargeAmount, 1.0f );
 #ifdef GAME_DLL
 					if ( flNewLevel >= 1.0 && m_flChargeLevel < 1.0 )
 					{
@@ -673,7 +673,7 @@ void CWeaponMedigun::DrainCharge( void )
 			}
 		}
 		
-		m_flChargeLevel = max( m_flChargeLevel - flChargeAmount, 0.0 );
+		m_flChargeLevel = max( m_flChargeLevel - flChargeAmount, 0.0f );
 		if ( !m_flChargeLevel )
 		{
 			m_bChargeRelease = false;

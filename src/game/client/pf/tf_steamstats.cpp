@@ -12,8 +12,8 @@
 #include "achievementmgr.h"
 #include "engine/imatchmaking.h"
 #include "ipresence.h"
-#include "../game/shared/tf/tf_shareddefs.h"
-#include "../game/shared/tf/tf_gamestats_shared.h"
+#include "tf_shareddefs.h"
+#include "tf_gamestats_shared.h"
 
 struct StatMap_t
 {

@@ -192,7 +192,7 @@ C_TETFExplosion::C_TETFExplosion( void )
 	m_vecOrigin.Init();
 	m_vecNormal.Init();
 	m_iWeaponID = TF_WEAPON_NONE;
-	m_hEntity = INVALID_EHANDLE_INDEX;
+	m_hEntity = INVALID_EHANDLE;
 }
 
 //-----------------------------------------------------------------------------
@@ -208,7 +208,7 @@ void C_TETFExplosion::PostDataUpdate( DataUpdateType_t updateType )
 static void RecvProxy_ExplosionEntIndex( const CRecvProxyData *pData, void *pStruct, void *pOut )
 {
 	int nEntIndex = pData->m_Value.m_Int;
-	((C_TETFExplosion*)pStruct)->m_hEntity = (nEntIndex < 0) ? INVALID_EHANDLE_INDEX : ClientEntityList().EntIndexToHandle( nEntIndex );
+	((C_TETFExplosion*)pStruct)->m_hEntity = (nEntIndex < 0) ? INVALID_EHANDLE : ClientEntityList().EntIndexToHandle( nEntIndex );
 }
 
 IMPLEMENT_CLIENTCLASS_EVENT_DT( C_TETFExplosion, DT_TETFExplosion, CTETFExplosion )

@@ -33,13 +33,15 @@
 #include <vgui_controls/ImageList.h>
 #include "vgui_avatarimage.h"
 
-#ifdef TF_CLIENT_DLL
+#if defined( TF_CLIENT_DLL ) || defined( PF2 )
 #include "ienginevgui.h"
-#include "tf_gcmessages.h"
 #include "c_tf_player.h"
+#if !defined( PF2 )
+#include "tf_gcmessages.h"
 #include "econ_notifications.h"
 #include "confirm_dialog.h"
 #include "gc_clientsystem.h"
+#endif
 #include "tf_gamerules.h"
 #include "c_playerresource.h"
 #include "c_tf_objective_resource.h"
@@ -227,7 +229,7 @@ CVoteSetupDialog::CVoteSetupDialog( vgui::Panel *parent ) : BaseClass( parent, "
 	Q_memset( m_iImageTeamBot, 0, sizeof( m_iImageTeamBot ) );
 #endif // TF_CLIENT_DLL
 
-#ifdef TF_CLIENT_DLL
+#if defined( TF_CLIENT_DLL ) || defined( PF2 )
 	vgui::HScheme scheme = vgui::scheme()->LoadSchemeFromFileEx( enginevgui->GetPanel( PANEL_CLIENTDLL ), "resource/ClientScheme.res", "ClientScheme");
 	SetScheme(scheme);
 #else
@@ -323,7 +325,7 @@ void CVoteSetupDialog::ApplySettings(KeyValues *inResourceData)
 		m_hHeaderFont = pScheme->GetFont( pszFont, true );
 	}
 
-#ifdef TF_CLIENT_DLL
+#if defined( TF_CLIENT_DLL ) || defined( PF2 )
 	m_hPlayerNameFont = INVALID_FONT;
 	pszFont = inResourceData->GetString( "player_font", NULL );
 	if ( pszFont && pszFont[0] )
@@ -494,7 +496,7 @@ void CVoteSetupDialog::Activate()
 	m_pVoteParameterList->SetSectionFgColor( 0, Color( 255, 255, 255, 255 ) );
 	m_pVoteParameterList->SetBgColor( Color( 0, 0, 0, 0 ) );
 	m_pVoteParameterList->SetBorder( NULL );
-#ifdef TF_CLIENT_DLL
+#if defined( TF_CLIENT_DLL ) || defined( PF2 )
 	int nAvatarSize = QuickPropScale( 16 );
 	int nSpacerSize = QuickPropScale( 5 );
 	m_pVoteParameterList->AddColumnToSection( 0, "Avatar", "", SectionedListPanel::COLUMN_IMAGE | SectionedListPanel::COLUMN_RIGHT, nAvatarSize );
@@ -519,7 +521,7 @@ void CVoteSetupDialog::Activate()
 		m_pVoteParameterList->SetSectionFgColor( 1, m_HeaderFGColor );
 	}
 
-#ifdef TF_CLIENT_DLL
+#if defined( TF_CLIENT_DLL ) || defined( PF2 )
 	m_hRowFont = m_pVoteSetupList->GetRowFont();
 #endif // TF_CLIENT_DLL
 
@@ -764,7 +766,7 @@ void CVoteSetupDialog::OnItemSelected( vgui::Panel *panel )
 					}
 				}
 
-#ifdef TF_CLIENT_DLL
+#if defined( TF_CLIENT_DLL ) || defined( PF2 )
 				SetDialogVariable( "combo_label", g_pVGuiLocalize->Find( "#TF_VoteKickReason" ) );
 				m_pComboBox->AddItem( g_pVGuiLocalize->Find( "TF_VoteKickReason_Other" ), new KeyValues( "other" ) );
 				m_pComboBox->AddItem( g_pVGuiLocalize->Find( "TF_VoteKickReason_Cheating" ), new KeyValues( "cheating" ) );
@@ -869,7 +871,7 @@ void CVoteSetupDialog::RefreshIssueParameters()
 			{
 				for ( int index = 0; index < m_pVoteParameterList->GetItemCount(); index++ )
 				{
-#ifdef TF_CLIENT_DLL
+#if defined( TF_CLIENT_DLL ) || defined( PF2 )
 					if ( m_hPlayerNameFont != INVALID_FONT )
 						m_pVoteParameterList->SetItemFont( index, m_hPlayerNameFont );
 #endif // TF_CLIENT_DLL
@@ -999,7 +1001,7 @@ CHudVote::CHudVote( const char *pElementName ) : CHudElement( pElementName ), Ba
 	vgui::Panel *pParent = g_pClientMode->GetViewport();
 	SetParent( pParent );
 
-#ifdef TF_CLIENT_DLL
+#if defined( TF_CLIENT_DLL ) || defined( PF2 )
 	vgui::HScheme scheme = vgui::scheme()->LoadSchemeFromFileEx( enginevgui->GetPanel( PANEL_CLIENTDLL ), "resource/ClientScheme.res", "ClientScheme");
 	SetScheme(scheme);
 #endif
@@ -1920,7 +1922,7 @@ CHudVotePanel::CHudVotePanel( vgui::Panel *pParent, int nIdx ) : BaseClass( NULL
 	m_nVotePanelIdx = nIdx;
 	SetParent( pParent );
 
-#ifdef TF_CLIENT_DLL
+#if defined( TF_CLIENT_DLL ) || defined( PF2 )
 	vgui::HScheme scheme = vgui::scheme()->LoadSchemeFromFileEx( enginevgui->GetPanel( PANEL_CLIENTDLL ), "resource/ClientScheme.res", "ClientScheme");
 	SetScheme(scheme);
 #endif

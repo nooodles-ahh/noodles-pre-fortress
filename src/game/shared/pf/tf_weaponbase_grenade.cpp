@@ -380,7 +380,7 @@ void CTFWeaponBaseGrenade::ItemPostFrame()
 		// Start throwing
 		pPlayer->DoAnimationEvent( PLAYERANIMEVENT_ATTACK_GRENADE );
 		SendWeaponAnim( ACT_VM_PRIMARYATTACK );
-		PoseParameterOverride( true );
+		//PoseParameterOverride( true );
 
 		Throw();
 		return;

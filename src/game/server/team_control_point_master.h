@@ -134,6 +134,11 @@ public:
 	int GetCurrentRoundIndex() { return m_iCurrentRoundIndex; }
 	bool ShouldSwitchTeamsOnRoundWin( void ) { return m_bSwitchTeamsOnWin; }
 
+#if defined( PF2 )
+	void UpdateControlPointsNeedingFlags();
+	bool IsEscort( void ) { return m_bEscort; }
+#endif
+
 private:
 	void EXPORT CPMThink( void );
 
@@ -212,6 +217,10 @@ private:
 
 	float m_flPartialCapturePointsRate;
 	float m_flLastOwnershipChangeTime;
+
+#if defined( PF2 )
+	bool m_bEscort;
+#endif
 };
 
 extern CUtlVector< CHandle<CTeamControlPointMaster> >		g_hControlPointMasters;

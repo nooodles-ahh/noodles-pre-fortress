@@ -121,6 +121,15 @@ public:
 //private:
 	void			CopyDamageToBaseDamage();
 
+#if defined( PF2 )
+	float			GetArmorRemoved() const;
+	void			SetArmorRemoved( float flArmorRemoved );
+	void			SetIgnoreArmor( bool bValue );
+	bool			IgnoreArmor() const;
+
+	void			SetBaseDamage( float flBaseDamage );
+#endif
+
 protected:
 	void			Init( CBaseEntity *pInflictor, CBaseEntity *pAttacker, CBaseEntity *pWeapon, const Vector &damageForce, const Vector &damagePosition, const Vector &reportedPosition, float flDamage, int bitsDamageType, int iKillType );
 
@@ -146,6 +155,11 @@ protected:
 	float			m_flDamageForForce;
 
 	ECritType		m_eCritType;
+
+#if defined( PF2 )
+	float			m_flArmorRemoved;
+	bool			m_bIgnoreArmor;			// Use this to skip armor calculations
+#endif
 
 	DECLARE_SIMPLE_DATADESC();
 };
@@ -236,6 +250,18 @@ inline void CTakeDamageInfo::SetDamage( float flDamage )
 {
 	m_flDamage = flDamage;
 }
+
+#if defined( PF2 )
+inline float CTakeDamageInfo::GetArmorRemoved() const
+{
+	return m_flArmorRemoved;
+}
+
+inline void CTakeDamageInfo::SetArmorRemoved( float flArmorRemoved )
+{
+	m_flArmorRemoved = flArmorRemoved;
+}
+#endif
 
 inline float CTakeDamageInfo::GetMaxDamage() const
 {
@@ -390,6 +416,22 @@ inline void CTakeDamageInfo::CopyDamageToBaseDamage()
 	m_flBaseDamage = m_flDamage;
 }
 
+#if defined( PF2 )
+inline void CTakeDamageInfo::SetBaseDamage( float iBaseDamage )
+{
+	m_flBaseDamage = iBaseDamage;
+}
+
+inline void CTakeDamageInfo::SetIgnoreArmor( bool bValue )
+{
+	m_bIgnoreArmor = bValue;
+}
+
+inline bool CTakeDamageInfo::IgnoreArmor() const
+{
+	return m_bIgnoreArmor;
+}
+#endif
 
 // -------------------------------------------------------------------------------------------------- //
 // Inlines.

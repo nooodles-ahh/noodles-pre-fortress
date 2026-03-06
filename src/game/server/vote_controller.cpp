@@ -12,9 +12,9 @@
 #include "gameinterface.h"
 #include "fmtstr.h"
 
-#ifdef TF_DLL
-#include "tf/tf_gamerules.h"
-#include "tf/tf_voteissues.h"
+#if defined( TF_DLL ) || defined( PF2 )
+#include "tf_gamerules.h"
+#include "tf_voteissues.h"
 #endif
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -251,6 +251,20 @@ CON_COMMAND( callvote, "Start a vote on an issue." )
 	if ( !pVoteCaller )
 		return;
 
+#if defined( PF2 )
+	edict_t *pClient = NULL;
+
+	pClient = pVoteCaller->edict();
+
+	if ( pClient )
+	{
+		// close main menu when this get called, needs to be called twice
+		// THIS IS HORRENDOUS
+		engine->ClientCommand( pClient, "escape" );
+		engine->ClientCommand( pClient, "escape" );
+	}
+#endif
+
 	if ( !sv_vote_allow_spectators.GetBool() )
 	{
 		if ( pVoteCaller->GetTeamNumber() == TEAM_SPECTATOR )
@@ -292,7 +306,11 @@ CON_COMMAND( callvote, "Start a vote on an issue." )
 #if 1
 	if ( bActiveVote )
 	{
+#if defined( PF2 )
+		g_voteControllerGlobal->SendVoteCreationFailedMessage( VOTE_FAILED_VOTE_IN_PROGRESS, pVoteCaller );
+#else
 		ClientPrint( pVoteCaller, HUD_PRINTCENTER, "#GameUI_vote_failed_vote_in_progress" );
+#endif
 		return;
 	}
 #else
@@ -838,7 +856,7 @@ void CVoteController::VoteControllerThink( void )
 		if ( bVotePassed )
 		{
 			float flDelay = sv_vote_command_delay.GetFloat();
-#ifdef TF_DLL
+#if defined( TF_DLL ) || defined( PF2 )
 			if ( dynamic_cast< CKickIssue* >( m_potentialIssues[m_iActiveIssueIndex] ) )
 			{
 				// Don't delay successful kick votes
@@ -1309,7 +1327,7 @@ bool CBaseIssue::RequestCallVote( int iEntIndex, const char *pszDetails, vote_cr
 		return false;
 	}
 
-#ifdef TF_DLL
+#if defined( TF_DLL ) || defined( PF2 )
 	if ( TFGameRules() && TFGameRules()->IsInWaitingForPlayers() && !TFGameRules()->IsInTournamentMode() )
 	{
 		nFailCode = VOTE_FAILED_WAITINGFORPLAYERS;

@@ -27,8 +27,8 @@
 void ToolFramework_RecordMaterialParams( IMaterial *pMaterial );
 #endif
 
-#define TF_WEAPON_SNIPERRIFLE_CHARGE_PER_SEC	50.0
-#define TF_WEAPON_SNIPERRIFLE_UNCHARGE_PER_SEC	75.0
+#define TF_WEAPON_SNIPERRIFLE_CHARGE_PER_SEC	50.0f
+#define TF_WEAPON_SNIPERRIFLE_UNCHARGE_PER_SEC	75.0f
 #define	TF_WEAPON_SNIPERRIFLE_DAMAGE_MIN		50
 #define TF_WEAPON_SNIPERRIFLE_DAMAGE_MAX		150
 #define TF_WEAPON_SNIPERRIFLE_RELOAD_TIME		1.5f
@@ -69,7 +69,7 @@ END_NETWORK_TABLE()
 BEGIN_PREDICTION_DATA( CTFSniperRifle )
 #ifdef CLIENT_DLL
 	DEFINE_PRED_FIELD( m_flChargedDamage, FIELD_FLOAT, 0 ),
-	DEFINE_PRED_FIELD( m_flChargeStarted, FIELD_TIME, 0 ),
+	DEFINE_PRED_FIELD( m_flChargeStarted, FIELD_FLOAT, 0 ),
 	DEFINE_PRED_FIELD( m_bInAttack, FIELD_BOOLEAN, 0 ),
 #endif
 END_PREDICTION_DATA()
@@ -397,7 +397,7 @@ void CTFSniperRifle::ItemPostFrame( void )
 		}
 		else
 		{	
-			m_flChargedDamage = max( 0, m_flChargedDamage - gpGlobals->frametime * TF_WEAPON_SNIPERRIFLE_UNCHARGE_PER_SEC );
+			m_flChargedDamage = max( 0.f, m_flChargedDamage - gpGlobals->frametime * TF_WEAPON_SNIPERRIFLE_UNCHARGE_PER_SEC );
 		}
 	}
 
@@ -626,7 +626,7 @@ void CTFSniperRifle::Fire( CTFPlayer *pPlayer )
 float CTFSniperRifle::GetProjectileDamage( void )
 {
 	// Uncharged? Min damage.
-	return max( m_flChargedDamage, m_flDamageMin);
+	return max( m_flChargedDamage.Get(), m_flDamageMin);
 }
 
 //-----------------------------------------------------------------------------

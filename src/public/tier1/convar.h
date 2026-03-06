@@ -382,6 +382,14 @@ public:
 
 	FORCEINLINE_CVAR bool		IsCompetitiveRestricted() const;
 	bool						SetCompetitiveMode( bool bCompetitive );
+	
+#if defined( PF2 )
+	//next 4 are from open fortress
+	void						SetMin( float min );
+	void						SetMax( float max );
+	void						SetFlags( int flags );
+	void						Nuke( void );
+#endif
 
 private:
 	// Called by CCvar when the value of a var is changing.
@@ -451,6 +459,41 @@ private:
 	bool						m_bCompetitiveRestrictions;
 };
 
+#if defined( PF2 )
+FORCEINLINE_CVAR void ConVar::Nuke( void )
+{
+	m_pParent->Shutdown();
+	Shutdown();
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+// Input  : flags - 
+//-----------------------------------------------------------------------------
+FORCEINLINE_CVAR void ConVar::SetFlags( int flags )
+{
+	m_pParent->m_nFlags = flags;
+	m_nFlags = flags;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Set a convar's bound
+//-----------------------------------------------------------------------------
+FORCEINLINE_CVAR void ConVar::SetMin( float min )
+{
+	m_pParent->m_bHasMin = true;
+	m_pParent->m_fMinVal = min;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Set a convar's bound
+//-----------------------------------------------------------------------------
+FORCEINLINE_CVAR void ConVar::SetMax( float max )
+{
+	m_pParent->m_bHasMax = true;
+	m_pParent->m_fMaxVal = max;
+}
+#endif
 
 //-----------------------------------------------------------------------------
 // Purpose: Return ConVar value as a float
@@ -531,6 +574,9 @@ public:
 	const char *GetName() const;
 
 	const char *GetDefault() const;
+#if defined( PF2 )
+	void	SetDefault( const char *pszDefaultvalue );
+#endif
 
 private:
 	// High-speed method to read convar data
@@ -617,6 +663,13 @@ FORCEINLINE_CVAR const char *ConVarRef::GetDefault() const
 {
 	return m_pConVarState->m_pszDefaultValue;
 }
+
+#if defined( PF2 )
+FORCEINLINE_CVAR void ConVarRef::SetDefault( const char *defaultvalue )
+{
+	m_pConVarState->m_pszDefaultValue = defaultvalue;
+}
+#endif
 
 class IVEngineClient;
 // Josh:

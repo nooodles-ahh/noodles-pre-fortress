@@ -95,6 +95,8 @@ ConVar tf_damage_range( "tf_damage_range", "0.5", FCVAR_DEVELOPMENTONLY );
 
 ConVar tf_max_voice_speak_delay( "tf_max_voice_speak_delay", "1.5", FCVAR_DEVELOPMENTONLY, "Max time after a voice command until player can do another one" );
 
+ConVar tf_allow_player_use( "tf_allow_player_use", "0", FCVAR_NOTIFY, "Allow players to execute +use while playing." );
+
 extern ConVar spec_freeze_time;
 extern ConVar spec_freeze_traveltime;
 extern ConVar sv_maxunlag;
@@ -209,23 +211,6 @@ END_SEND_TABLE()
 // -------------------------------------------------------------------------------- //
 // Tables.
 // -------------------------------------------------------------------------------- //
-
-//-----------------------------------------------------------------------------
-// Purpose: Filters updates to a variable so that only non-local players see
-// the changes.  This is so we can send a low-res origin to non-local players
-// while sending a hi-res one to the local player.
-// Input  : *pVarData - 
-//			*pOut - 
-//			objectID - 
-//-----------------------------------------------------------------------------
-
-void* SendProxy_SendNonLocalDataTable( const SendProp *pProp, const void *pStruct, const void *pVarData, CSendProxyRecipients *pRecipients, int objectID )
-{
-	pRecipients->SetAllRecipients();
-	pRecipients->ClearRecipient( objectID - 1 );
-	return ( void * )pVarData;
-}
-REGISTER_SEND_PROXY_NON_MODIFIED_POINTER( SendProxy_SendNonLocalDataTable );
 
 //-----------------------------------------------------------------------------
 // Purpose: SendProxy that converts the UtlVector list of objects to entindexes, where it's reassembled on the client
@@ -3591,7 +3576,7 @@ int CTFPlayer::OnTakeDamage( const CTakeDamageInfo &inputInfo )
 
 				if( bitsDamage & DMG_USEDISTANCEMOD )
 				{
-					float flDistance = max( 1.0, (WorldSpaceCenter() - info.GetAttacker()->WorldSpaceCenter()).Length() );
+					float flDistance = MAX( 1.0, (WorldSpaceCenter() - info.GetAttacker()->WorldSpaceCenter()).Length() );
 					float flOptimalDistance = 512.0;
 
 					flCenter = RemapValClamped( flDistance / flOptimalDistance, 0.0, 2.0, 1.0, 0.0 );
@@ -4070,7 +4055,7 @@ int CTFPlayer::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 	
 	if (info.GetDamageType() & DMG_NERVEGAS && !bFriendlyFireEvent )
 	{
-		float duration = min( m_Shared.GetConditionDuration( TF_COND_HALLUCINATING ) + 4.0f, 12 );
+		float duration = MIN( m_Shared.GetConditionDuration( TF_COND_HALLUCINATING ) + 4.0f, 12 );
 		m_Shared.AddCond( TF_COND_HALLUCINATING, duration );
 	}
 
@@ -7884,4 +7869,20 @@ bool CTFPlayer::ShouldAnnounceAchievement( void )
 	}
 
 	return BaseClass::ShouldAnnounceAchievement();
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Handles USE keypress
+//-----------------------------------------------------------------------------
+void CTFPlayer::PlayerUse( void )
+{
+	if ( tf_allow_player_use.GetBool() == false )
+	{
+		if ( !IsObserver() && !IsInCommentaryMode() )
+		{
+			return;
+		}
+	}
+
+	BaseClass::PlayerUse();
 }

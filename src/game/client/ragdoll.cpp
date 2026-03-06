@@ -818,7 +818,11 @@ struct ragdoll_memory_list_t
 
 	void Update()
 	{
+#if defined( PF2 )
+		if ( ( gpGlobals->tickcount - tickCount ) > 10 )
+#else
 		if ( tickCount > gpGlobals->tickcount )
+#endif
 		{
 			list.RemoveAll();
 			return;
@@ -826,7 +830,11 @@ struct ragdoll_memory_list_t
 
 		for ( int i = list.Count()-1; i >= 0; --i )
 		{
+#if defined( PF2 )
+			if ( ( gpGlobals->tickcount - list[i].tickCount ) > 10 )
+#else
 			if ( list[i].tickCount != gpGlobals->tickcount )
+#endif
 			{
 				list.FastRemove(i);
 			}
@@ -857,6 +865,9 @@ static ragdoll_memory_list_t gRagdolls;
 void NoteRagdollCreationTick( C_BaseEntity *pRagdoll )
 {
 	gRagdolls.AddToList( pRagdoll );
+#if defined( PF2 )
+	gRagdolls.tickCount = gpGlobals->tickcount;
+#endif
 }
 
 // returns true if the ragdoll was created on this tick

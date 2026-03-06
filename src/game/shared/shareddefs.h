@@ -19,7 +19,7 @@
 #define ROUND_TO_TICKS( t )		( TICK_INTERVAL * TIME_TO_TICKS( t ) )
 #define TICK_NEVER_THINK		(-1)
 
-#if defined( TF_DLL )
+#if defined( TF_DLL ) || defined( PF2 )
 #define ANIMATION_CYCLE_BITS		10
 #else
 #define ANIMATION_CYCLE_BITS		15
@@ -102,7 +102,7 @@ public:
 
 #define MAX_CLIMB_SPEED		200
 
-#if defined(TF_DLL) || defined(TF_CLIENT_DLL)
+#if defined(TF_DLL) || defined(TF_CLIENT_DLL) || defined( PF2 )
 	#define TIME_TO_DUCK		0.2
 	#define TIME_TO_DUCK_MS		200.0f
 #else
@@ -216,7 +216,7 @@ enum CastVote
 #define HIDEHUD_INVEHICLE			( 1<<10 )
 #define HIDEHUD_BONUS_PROGRESS		( 1<<11 )	// Hide bonus progress display (for bonus map challenges)
 
-#if defined( TF_DLL ) || defined ( TF_CLIENT_DLL )
+#if defined( TF_DLL ) || defined ( TF_CLIENT_DLL ) || defined( PF2 )
 #define HIDEHUD_BUILDING_STATUS		        ( 1<<12 )	// Hide Engineer building status
 #define HIDEHUD_CLOAK_AND_FEIGN             ( 1<<13 )	// Hide item effect meter (cloak, etc)
 #define HIDEHUD_PIPES_AND_CHARGE            ( 1<<14 )	// Hide demo hud
@@ -251,7 +251,7 @@ enum CastVote
 //Since this is decided by the gamerules (and it can be whatever number as long as its less than MAX_PLAYERS).
 #if defined( CSTRIKE_DLL )
 	#define MAX_PLAYERS				65  // Absolute max players supported
-#elif defined( TF_DLL ) || defined ( TF_CLIENT_DLL ) || defined( HL2MP )
+#elif defined( TF_DLL ) || defined ( TF_CLIENT_DLL ) || defined( HL2MP ) || defined( PF2 )
 	#define MAX_PLAYERS				101
 #else
 	#define MAX_PLAYERS				33  // Absolute max players supported
@@ -271,7 +271,12 @@ inline bool IsIndexIntoPlayerArrayValid( int iIndex )
 
 #define MAX_PLACE_NAME_LENGTH		18
 
+#if defined( PF2 )
+#define MIN_FOV						75
+#define MAX_FOV						130
+#else
 #define MAX_FOV						90
+#endif
 
 //===================================================================================================================
 // Team Defines
@@ -322,7 +327,11 @@ inline bool IsIndexIntoPlayerArrayValid( int iIndex )
 
 // Humans only have left and right hands, though we might have aliens with more
 //  than two, sigh
+#if defined( PF2 )
+#define MAX_VIEWMODELS			4
+#else
 #define MAX_VIEWMODELS			2
+#endif
 
 #define MAX_BEAM_ENTS			10
 
@@ -926,7 +935,7 @@ enum
 //-----------------------------------------------------------------------------
 // Commentary Mode
 //-----------------------------------------------------------------------------
-#if defined(TF_DLL) || defined(TF_CLIENT_DLL)
+#if defined(TF_DLL) || defined(TF_CLIENT_DLL) || defined( PF2 )
 #define GAME_HAS_NO_USE_KEY
 
 #if defined( SPROP_COORD )
@@ -968,7 +977,7 @@ enum
 	kActivityLookup_Missing = -1,			// has been searched for but wasn't found
 };
 
-#if defined(TF_DLL) || defined(TF_CLIENT_DLL)
+#if defined(TF_DLL) || defined(TF_CLIENT_DLL) || defined( PF2 )
 //-----------------------------------------------------------------------------
 // Vision Filters.
 //-----------------------------------------------------------------------------

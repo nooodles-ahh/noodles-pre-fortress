@@ -778,6 +778,10 @@ void UTIL_Tracer( const Vector &vecStart, const Vector &vecEnd, int iEntIndex,
 
 void UTIL_BloodDrips( const Vector &origin, const Vector &direction, int color, int amount )
 {
+#if defined( PF2 )
+	CDisablePredictionFiltering disabler;
+#endif
+
 	if ( !UTIL_ShouldShowBlood( color ) )
 		return;
 

@@ -230,11 +230,11 @@ BEGIN_PREDICTION_DATA_NO_BASE( CTFPlayerShared )
 	DEFINE_PRED_FIELD( m_nAirDuckCount, FIELD_INTEGER, FTYPEDESC_INSENDTABLE ),
 	DEFINE_PRED_FIELD( m_bBlockJump, FIELD_BOOLEAN, FTYPEDESC_INSENDTABLE ),
 #ifdef PF2_CLIENT
-	DEFINE_PRED_FIELD( m_flNextThrowTime, FIELD_TIME, FTYPEDESC_INSENDTABLE ),
+	DEFINE_PRED_FIELD( m_flNextThrowTime, FIELD_FLOAT, FTYPEDESC_INSENDTABLE ),
 	DEFINE_PRED_FIELD( m_bUsedDetpack, FIELD_BOOLEAN, FTYPEDESC_INSENDTABLE ),
 	DEFINE_PRED_FIELD( m_iPrimed, FIELD_INTEGER, FTYPEDESC_INSENDTABLE ),
-	DEFINE_PRED_FIELD( m_flGrenade1RegenTime, FIELD_TIME, FTYPEDESC_INSENDTABLE ),
-	DEFINE_PRED_FIELD( m_flGrenade2RegenTime, FIELD_TIME, FTYPEDESC_INSENDTABLE ),
+	DEFINE_PRED_FIELD( m_flGrenade1RegenTime, FIELD_FLOAT, FTYPEDESC_INSENDTABLE ),
+	DEFINE_PRED_FIELD( m_flGrenade2RegenTime, FIELD_FLOAT, FTYPEDESC_INSENDTABLE ),
 #endif
 END_PREDICTION_DATA()
 
@@ -809,7 +809,7 @@ void CTFPlayerShared::ConditionGameRulesThink( void )
 					flReduction += (m_aHealers.Count() * flReduction * 4);
 				}
 
-				m_flCondExpireTimeLeft[i] = max( m_flCondExpireTimeLeft[i] - flReduction, 0 );
+				m_flCondExpireTimeLeft[i] = max( m_flCondExpireTimeLeft[i] - flReduction, 0.f );
 
 				if ( m_flCondExpireTimeLeft[i] == 0 )
 				{

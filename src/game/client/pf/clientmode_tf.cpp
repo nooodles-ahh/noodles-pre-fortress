@@ -45,7 +45,6 @@
 #include "tf_statsummary.h"
 #include "tf_hud_freezepanel.h"
 #include "cam_thirdperson.h"
-#include "pf_discord_rpc.h"
 #include "clienteffectprecachesystem.h"
 #include "main_menu/pf_loading_panel.h"
 

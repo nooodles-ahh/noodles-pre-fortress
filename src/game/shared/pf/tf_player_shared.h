@@ -132,12 +132,12 @@ public:
 	int		GetDisguiseClass( void ) 			{ return m_nDisguiseClass; }
 	int		GetDesiredDisguiseClass( void )		{ return m_nDesiredDisguiseClass; }
 	int		GetDesiredDisguiseTeam( void )		{ return m_nDesiredDisguiseTeam; }
-	EHANDLE GetDisguiseTarget( void ) 	
+	CBaseEntity *GetDisguiseTarget( void )
 	{
 #ifdef CLIENT_DLL
 		if ( m_iDisguiseTargetIndex == TF_DISGUISE_TARGET_INDEX_NONE )
 			return NULL;
-		return cl_entitylist->GetNetworkableHandle( m_iDisguiseTargetIndex );
+		return cl_entitylist->GetBaseEntity( m_iDisguiseTargetIndex );
 #else
 		return m_hDisguiseTarget.Get();
 #endif

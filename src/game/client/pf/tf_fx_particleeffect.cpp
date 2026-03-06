@@ -50,7 +50,7 @@ C_TETFParticleEffect::C_TETFParticleEffect( void )
 
 	m_iParticleSystemIndex = -1;
 
-	m_hEntity = INVALID_EHANDLE_INDEX;
+	m_hEntity = INVALID_EHANDLE;
 
 	m_iAttachType = PATTACH_ABSORIGIN;
 	m_iAttachmentPointIndex = 0;
@@ -73,7 +73,7 @@ void C_TETFParticleEffect::PostDataUpdate( DataUpdateType_t updateType )
 	data.m_vStart = m_vecStart;
 	data.m_vAngles = m_vecAngles;
 
-	if ( m_hEntity != INVALID_EHANDLE_INDEX )
+	if ( m_hEntity != INVALID_EHANDLE )
 	{
 		data.m_hEntity = m_hEntity;
 		data.m_fFlags |= PARTICLE_DISPATCH_FROM_ENTITY;
@@ -97,7 +97,7 @@ void C_TETFParticleEffect::PostDataUpdate( DataUpdateType_t updateType )
 static void RecvProxy_ParticleSystemEntIndex( const CRecvProxyData *pData, void *pStruct, void *pOut )
 {
 	int nEntIndex = pData->m_Value.m_Int;
-	((C_TETFParticleEffect*)pStruct)->m_hEntity = (nEntIndex < 0) ? INVALID_EHANDLE_INDEX : ClientEntityList().EntIndexToHandle( nEntIndex );
+	((C_TETFParticleEffect*)pStruct)->m_hEntity = (nEntIndex < 0) ? INVALID_EHANDLE : ClientEntityList().EntIndexToHandle( nEntIndex );
 }
 
 IMPLEMENT_CLIENTCLASS_EVENT_DT( C_TETFParticleEffect, DT_TETFParticleEffect, CTETFParticleEffect )

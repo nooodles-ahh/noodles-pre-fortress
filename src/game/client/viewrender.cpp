@@ -53,8 +53,8 @@
 #include "clientmode_shared.h"
 #include "sourcevr/isourcevirtualreality.h"
 #include "client_virtualreality.h"
-#ifdef TF_CLIENT_DLL
-#include "tf/c_tf_player.h"
+#if defined( TF_CLIENT_DLL ) || defined( PF2 )
+#include "c_tf_player.h"
 #endif
 
 #ifdef PORTAL
@@ -112,7 +112,7 @@ static ConVar r_drawopaqueworld( "r_drawopaqueworld", "1", FCVAR_CHEAT );
 static ConVar r_drawtranslucentworld( "r_drawtranslucentworld", "1", FCVAR_CHEAT );
 static ConVar r_3dsky( "r_3dsky","1", 0, "Enable the rendering of 3d sky boxes" );
 static ConVar r_skybox( "r_skybox","1", FCVAR_CHEAT, "Enable the rendering of sky boxes" );
-#ifdef TF_CLIENT_DLL
+#if defined( TF_CLIENT_DLL ) || defined( PF2 )
 ConVar r_drawviewmodel( "r_drawviewmodel","1", FCVAR_DONTRECORD );
 #else
 ConVar r_drawviewmodel( "r_drawviewmodel","1", FCVAR_CHEAT );

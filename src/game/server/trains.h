@@ -115,7 +115,7 @@ public:
 
 	static CFuncTrackTrain *Instance( edict_t *pent );
 
-#ifdef TF_DLL
+#if defined( TF_DLL ) || defined( PF2 )
 	int UpdateTransmitState()
 	{
 		return SetTransmitState( FL_EDICT_ALWAYS );

@@ -76,9 +76,7 @@ CPFCharInfoPanel::CPFCharInfoPanel( vgui::Panel *parent ) : PropertyDialog( pare
 	SetCancelButtonVisible( false );
 	SetOKButtonVisible( false );
 	m_bCloseExits = false;
-#ifdef PF2BETA
 	m_pCharInfoPanel = new CPFCharInfoLoadoutSubPanel( this );
-#endif
 	m_pStatsPanel = new CTFStatsSummaryPanel( this );
 
 	// Set up the stats panel to be displayed as a property page
@@ -86,9 +84,7 @@ CPFCharInfoPanel::CPFCharInfoPanel( vgui::Panel *parent ) : PropertyDialog( pare
 	GetStatPanel()->UpdateStatSummaryPanel();
 
 	// PFTODO - make these localised
-#ifdef PF2BETA
 	AddPage( m_pCharInfoPanel, "LOADOUT" );
-#endif
 	AddPage( m_pStatsPanel, "STATS" );
 
 	// Have to reload the schema here a first time here
@@ -112,11 +108,7 @@ void CPFCharInfoPanel::ApplySchemeSettings( vgui::IScheme *pScheme )
 	BaseClass::ApplySchemeSettings( pScheme );
 	SetProportional( true );
 	LoadControlSettings( "Resource/UI/CharInfoPanel.res" );
-#ifdef PF2BETA
 	GetPropertySheet()->SetActivePage( m_pCharInfoPanel ); // set our initial page as the loadout selection page
-#else
-	GetPropertySheet()->SetActivePage( m_pStatsPanel );
-#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -167,7 +159,6 @@ void CPFCharInfoPanel::ShowModal( int iClass )
 
 	// Update the stat summary panel with our stats
 	GetStatPanel()->UpdateStatSummaryPanel();
-#ifdef PF2BETA
 	GetPropertySheet()->SetActivePage( m_pCharInfoPanel );
 
 
@@ -176,9 +167,6 @@ void CPFCharInfoPanel::ShowModal( int iClass )
 	{
 		m_pCharInfoPanel->OpenFullLoadout( iClass );
 	}
-#else
-	GetPropertySheet()->SetActivePage( m_pStatsPanel );
-#endif
 }
 
 // used for accessing the menu through the main menu
@@ -188,7 +176,6 @@ CON_COMMAND( open_charinfo, "Shows the character info menu" )
 }
 
 
-#ifdef PF2BETA
 // used for accessing a specific loadout while in-game
 CON_COMMAND( open_charinfo_direct, "Shows the character info loadout menu" )
 {
@@ -204,4 +191,3 @@ CON_COMMAND( open_charinfo_direct, "Shows the character info loadout menu" )
 		GetCharacterInfoPanel()->ShowModal( 0 );
 	}
 }
-#endif

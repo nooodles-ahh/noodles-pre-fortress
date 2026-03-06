@@ -174,7 +174,7 @@ void CPFWebStuff::OnHTTPCreditsRequestCompleted( HTTPRequestCompleted_t *CallRes
 		m_pHTTP->GetHTTPResponseBodyData( CallResult->m_hRequest, iBodybuffer, iBodysize );
 
 		char result[8192];
-		V_strncpy( result, (char *)iBodybuffer, min( (int)(iBodysize + 1), sizeof( result ) ) );
+		V_strncpy( result, (char *)iBodybuffer, MIN( (int)(iBodysize + 1), sizeof( result ) ) );
 
 		KeyValues *kv = new KeyValues( "" );
 		if( kv->LoadFromBuffer( "Credits", result ) )
@@ -200,7 +200,7 @@ void CPFWebStuff::OnHTTPNewsRequestCompleted( HTTPRequestCompleted_t *CallResult
 		m_pHTTP->GetHTTPResponseBodyData( CallResult->m_hRequest, iBodybuffer, iBodysize );
 
 		char result[4096];
-		V_strncpy( result, (char *)iBodybuffer, min( (int)(iBodysize + 1), sizeof( result ) ) );
+		V_strncpy( result, (char *)iBodybuffer, MIN( (int)(iBodysize + 1), sizeof( result ) ) );
 
 		KeyValues *kv = new KeyValues( "" );
 		if( kv->LoadFromBuffer( "News", result ) )

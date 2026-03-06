@@ -91,7 +91,7 @@ const char* CKickIssue::GetVotePassedString()
 	return "#TF_vote_passed_kick_player";
 }
 
-bool CKickIssue::CanCallVote(int nEntIndex, const char* pszDetails, vote_create_failed_t& nFailCode, int& nTime)
+bool CKickIssue::RequestCallVote(int nEntIndex, const char* pszDetails, vote_create_failed_t& nFailCode, int& nTime)
 {
 	// string -> int
 	int m_iPlayerID = atoi(pszDetails);
@@ -126,7 +126,7 @@ bool CKickIssue::CanCallVote(int nEntIndex, const char* pszDetails, vote_create_
 		}
 	}
 
-	return CBaseTFIssue::CanCallVote(nEntIndex, pszDetails, nFailCode, nTime);
+	return CBaseTFIssue::RequestCallVote(nEntIndex, pszDetails, nFailCode, nTime);
 }
 
 void CKickIssue::ExecuteCommand(void)
@@ -262,7 +262,7 @@ bool CChangeLevelIssue::IsEnabled()
 		return false;
 }
 
-bool CChangeLevelIssue::CanCallVote(int iEntIndex, const char* pszDetails, vote_create_failed_t & nFailCode, int& nTime)
+bool CChangeLevelIssue::RequestCallVote(int iEntIndex, const char* pszDetails, vote_create_failed_t & nFailCode, int& nTime)
 {
 	if (pszDetails[0] == '\0')
 	{
@@ -279,7 +279,7 @@ bool CChangeLevelIssue::CanCallVote(int iEntIndex, const char* pszDetails, vote_
 		return false;
 	}
 
-	return CBaseTFIssue::CanCallVote(iEntIndex, pszDetails, nFailCode, nTime);
+	return CBaseTFIssue::RequestCallVote(iEntIndex, pszDetails, nFailCode, nTime);
 }
 
 //-----------------------------------------------------------------------------
@@ -307,7 +307,7 @@ bool CNextLevelIssue::IsYesNoVote(void)
 		return false;
 }
 
-bool CNextLevelIssue::CanCallVote(int nEntIndex, const char* pszDetails, vote_create_failed_t & nFailCode, int& nTime)
+bool CNextLevelIssue::RequestCallVote(int nEntIndex, const char* pszDetails, vote_create_failed_t & nFailCode, int& nTime)
 {
 	if (pszDetails[0] == '\0')
 	{
@@ -323,7 +323,7 @@ bool CNextLevelIssue::CanCallVote(int nEntIndex, const char* pszDetails, vote_cr
 		return false;
 	}
 
-	return CBaseTFIssue::CanCallVote(nEntIndex, pszDetails, nFailCode, nTime);
+	return CBaseTFIssue::RequestCallVote(nEntIndex, pszDetails, nFailCode, nTime);
 }
 
 bool CNextLevelIssue::GetVoteOptions(CUtlVector <const char*> & vecNames)

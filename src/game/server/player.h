@@ -262,6 +262,9 @@ public:
 	virtual void			UpdateOnRemove( void );
 
 	static CBasePlayer		*CreatePlayer( const char *className, edict_t *ed );
+#if defined( PF2 )
+	bool					IsDeveloper();
+#endif
 
 	virtual void			CreateViewModel( int viewmodelindex = 0 );
 	CBaseViewModel			*GetViewModel( int viewmodelindex = 0, bool bObserverOK = true );

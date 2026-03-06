@@ -242,8 +242,8 @@ $Project "Client ($GAMENAME)"
 					$File	"pf\vgui\panels\pf_advmusicpanel.h"
 					$File	"pf\vgui\panels\pf_charinfopanel.cpp"
 					$File	"pf\vgui\panels\pf_charinfopanel.h"
-					$File	"pf\vgui\panels\pf_loadoutpanel.cpp"	[$PF2BETA]
-					$File	"pf\vgui\panels\pf_loadoutpanel.h"		[$PF2BETA]
+					$File	"pf\vgui\panels\pf_loadoutpanel.cpp"
+					$File	"pf\vgui\panels\pf_loadoutpanel.h"
 					$File	"pf\vgui\panels\createmultiplayergamebotpage.cpp"
 					$File	"pf\vgui\panels\createmultiplayergamebotpage.h"
 					$File	"pf\vgui\panels\createmultiplayergamedialog.cpp"

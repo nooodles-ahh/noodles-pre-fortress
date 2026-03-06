@@ -23,7 +23,9 @@
 
 #if defined( TF_DLL ) || defined( PF2 )
 #include "tf_gamerules.h"
+#if defined( USE_NAV_MESH)
 #include "tf/nav_mesh/tf_nav_mesh.h"
+#endif
 #endif // TF_DLL
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -345,7 +347,9 @@ void CBaseDoor::Spawn()
 		m_bIgnoreNonPlayerEntsOnBlock = true;
 	}
 
+#if defined( USE_NAV_MESH )
 	TheTFNavMesh()->OnDoorCreated( this );
+#endif
 #else
 	m_bIgnoreNonPlayerEntsOnBlock = false;
 #endif // TF_DLL

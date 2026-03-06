@@ -10,8 +10,11 @@
 #include "team_control_point_master.h"
 #include "teamplayroundbased_gamerules.h"
 
-#if defined ( TF_DLL )
+#if defined ( TF_DLL ) || defined ( PF2 )
 #include "tf_gamerules.h"
+#endif
+#if defined( PF2 )
+#include "entity_capture_flag.h"
 #endif
 
 BEGIN_DATADESC( CTeamControlPointMaster )
@@ -77,6 +80,9 @@ CTeamControlPointMaster::CTeamControlPointMaster()
 	m_flPartialCapturePointsRate = 0.0f;
 	m_flCustomPositionX = -1.f;
 	m_flCustomPositionY = -1.f;
+#if defined( PF2 )
+	m_bEscort = false;
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -285,6 +291,14 @@ bool CTeamControlPointMaster::FindControlPoints( void )
 				ObjectiveResource()->SetPreviousPoint( iPointIndex, team, prevpoint, pPoint->GetPreviousPointForTeam(team, prevpoint) );
 			}
 		}
+
+#if defined( PF2 )
+		TFGameRules()->SetControlPointNeedingFlag( iPointIndex, pPoint->NeedsFlag() );
+		TFGameRules()->SetCivilianGoals( iPointIndex, pPoint->IsCivilianGoal() );
+
+		if ( pPoint->IsCivilianGoal() )
+			m_bEscort = true;
+#endif
 	}
 
 	return true;
@@ -379,6 +393,20 @@ int CTeamControlPointMaster::NumPlayableControlPointRounds( void )
 
 	return nRetVal;
 }
+
+#if defined( PF2 )
+void CTeamControlPointMaster::UpdateControlPointsNeedingFlags()
+{
+	for ( unsigned int i = 0; i < m_ControlPoints.Count(); i++ )
+	{
+		CTeamControlPoint *pPoint = m_ControlPoints[i];
+
+		int iPointIndex = m_ControlPoints[i]->GetPointIndex();
+
+		TFGameRules()->SetControlPointNeedingFlag( iPointIndex, pPoint->NeedsFlag() );
+	}
+}
+#endif
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -676,7 +704,7 @@ void CTeamControlPointMaster::CheckWinConditions( void )
 		{
 			bool bWinner = true;
 
-#if defined( TF_DLL)
+#if defined( TF_DLL) || defined ( PF2 )
 			if ( TFGameRules() && TFGameRules()->IsInKothMode() )
 			{
 				CTeamRoundTimer *pTimer = NULL;

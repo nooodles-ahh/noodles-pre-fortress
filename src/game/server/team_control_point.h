@@ -29,6 +29,10 @@ class CTeamControlPoint : public CBaseAnimating
 public:
 	DECLARE_DATADESC();
 
+#if defined( PF2 )
+	DECLARE_SERVERCLASS();
+#endif
+
 	CTeamControlPoint();
 
 	// Derived, game-specific control points must override these functions
@@ -111,13 +115,32 @@ public:
 
 	void EXPORT UnlockThink( void );
 
+#if defined( PF2 )
+	bool		NeedsFlag();
+	bool		IsCivilianGoal() { return m_bCivilianGoal; }
+
+	virtual int  UpdateTransmitState( void )
+	{
+		// ALWAYS transmit to all clients.
+		return SetTransmitState( FL_EDICT_ALWAYS );
+	}
+
+	bool		m_bNeedsFlag;	// flag setting
+	bool		m_bInstantFlagCap;
+	bool		m_bCivilianGoal;	// civillian goal area
+#endif
+
 private:
 	void		SendCapString( int iCapTeam, int iNumCappingPlayers, int *pCappingPlayers );
 	void		InternalSetOwner( int iCapTeam, bool bMakeSound = true, int iNumCappers = 0, int *iCappingPlayers = NULL );
 	void		HandleScoring( int iTeam );
 	void		InternalSetLocked( bool bLocked );
 
+#if defined( PF2 )
+	CNetworkVar( int, m_iTeam );
+#else
 	int			m_iTeam;			
+#endif
 	int			m_iDefaultOwner;			// Team that initially owns the cap point
 	int			m_iIndex;					// The index of this point in the controlpointArray
 	int			m_iWarnOnCap;				// Warn the team that owns the control point when the opposing team starts to capture it.
@@ -176,10 +199,18 @@ private:
 	COutputEvent	m_OnUnlocked;
 
 	int			m_bPointVisible;		//should this capture point be visible on the hud?
+#if defined( PF2 )
+	CNetworkVar( int, m_iPointIndex );
+#else
 	int			m_iPointIndex;			//the mapper set index value of this control point
+#endif
 
 	int			m_iCPGroup;			//the group that this control point belongs to
+#if defined( PF2 )
+	CNetworkVar( bool, m_bActive );
+#else
 	bool		m_bActive;			//
+#endif
 
 	string_t	m_iszName;				//Name used in cap messages
 

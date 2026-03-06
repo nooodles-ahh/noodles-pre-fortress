@@ -33,6 +33,11 @@
 #include "xbox/xbox_win32stubs.h"
 #endif
 
+#ifdef PF2
+#include "tf_weapon_tranq.h"
+#include "c_tf_player.h"
+#endif
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -488,6 +493,25 @@ void CInput::ScaleMouse( float *x, float *y )
 		*x *= mouse_sensitivity;
 		*y *= mouse_sensitivity;
 	}
+
+#ifdef PF2
+	C_TFPlayer *pPlayer = (C_TFPlayer *) C_TFPlayer::GetLocalPlayer();
+	if ( pPlayer )
+	{
+		if ( pPlayer->m_Shared.InCond( TF_COND_TRANQUILIZED ) )
+		{
+			*x *= TRANQ_SENSITIVITY_CHANGE;
+			*y *= TRANQ_SENSITIVITY_CHANGE;
+		}
+
+		// might be more ideal to deactivate then reactivate, but this is probably safer
+		/*if ( pPlayer->m_Shared.InCond( TF_COND_BUILDING_DETPACK ) )
+		{
+			*x = 0.0f;
+			*y = 0.0f;
+		}*/
+	}
+#endif
 }
 
 //-----------------------------------------------------------------------------

@@ -245,7 +245,11 @@ void CBaseGameStats::Event_Init( void )
 	SetHL2UnlockedChapterStatistic();
 	SetSteamStatistic( filesystem->IsSteam() );
 	SetCyberCafeStatistic( gamestatsuploader->IsCyberCafeUser() );
+#if defined( PF2 )
+	ConVarRef pDXLevel( "mat_dxlevel", true );
+#else
 	ConVarRef pDXLevel( "mat_dxlevel" );
+#endif
 	if( pDXLevel.IsValid() )
 	{
 		SetDXLevelStatistic( pDXLevel.GetInt() );

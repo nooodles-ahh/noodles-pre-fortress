@@ -17,9 +17,7 @@
 #include "vgui_controls/ScrollableEditablePanel.h"
 #include "basemodel_panel.h"
 #include "tf_controls.h"
-#ifdef PF2BETA
 #include "pf_loadoutpanel.h"
-#endif
 #include "tf_statsummary.h"
 using namespace vgui;
 
@@ -44,9 +42,7 @@ public:
 	virtual void OnCommand( const char *command );
 
 private:
-#ifdef PF2BETA
 	CPFCharInfoLoadoutSubPanel *m_pCharInfoPanel;
-#endif
 	CTFStatsSummaryPanel *m_pStatsPanel;
 	bool m_bShowLoadout;
 	bool m_bCloseExits;

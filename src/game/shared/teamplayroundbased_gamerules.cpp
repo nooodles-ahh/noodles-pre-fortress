@@ -45,6 +45,16 @@
 	#endif // GAME_DLL
 #endif
 
+#if defined( PF2 )
+#include "tf_gamerules.h"
+#if defined( GAME_DLL )
+#include "pf_cvars.h"
+#include "tf_objective_resource.h"
+#else
+#include "c_tf_objective_resource.h"
+#endif
+#endif
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -3437,7 +3447,7 @@ string_t CTeamplayRoundBasedRules::GetLastPlayedRound( void )
 //-----------------------------------------------------------------------------
 CTeamRoundTimer *CTeamplayRoundBasedRules::GetActiveRoundTimer( void )
 {
-#if defined( TF_DLL ) || defined( TF_CLIENT_DLL )
+#if defined( TF_DLL ) || defined( TF_CLIENT_DLL ) || defined( PF2 )
 	int iTimerEntIndex = ObjectiveResource()->GetTimerToShowInHUD();
 	CTeamRoundTimer *pTimer = NULL;
 

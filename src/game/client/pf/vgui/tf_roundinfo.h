@@ -39,6 +39,8 @@ public:
 
 	virtual void FireGameEvent( IGameEvent *event );
 
+	virtual GameActionSet_t GetPreferredActionSet() { return GAME_ACTION_SET_IN_GAME_HUD; }
+
 protected:
 	virtual void OnKeyCodePressed( vgui::KeyCode code );
 	virtual void PerformLayout();

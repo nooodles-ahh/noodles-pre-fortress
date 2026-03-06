@@ -72,6 +72,9 @@ public:
 	// interpolation will be done correctly on the client.
 	// This defaults to off.
 	void	UseClientSideAnimation();
+#if defined( PF2 )
+	void	UseServerSideAnimation();
+#endif
 
 	// Tells whether or not we're using client-side animation. Used for controlling
 	// the transmission of animtime.
@@ -553,7 +556,7 @@ EXTERN_SEND_TABLE(DT_BaseAnimating);
 #define ANIMATION_SKIN_BITS				10	// 1024 body skin selections FIXME: this seems way high
 #define ANIMATION_BODY_BITS				32	// body combinations
 #define ANIMATION_HITBOXSET_BITS		2	// hit box sets 
-#if defined( TF_DLL )
+#if defined( TF_DLL ) || defined( PF2 )
 #define ANIMATION_POSEPARAMETER_BITS	8	// pose parameter resolution
 #else
 #define ANIMATION_POSEPARAMETER_BITS	11	// pose parameter resolution

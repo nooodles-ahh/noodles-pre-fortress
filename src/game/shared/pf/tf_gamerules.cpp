@@ -51,10 +51,10 @@
 	#include "eventqueue.h"
 	#include "team_train_watcher.h"
 #endif
+#include "tf_weapon_grenade_pipebomb.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
-#include <tf/tf_weapon_grenade_pipebomb.h>
 
 #define ITEM_RESPAWN_TIME	10.0f
 #define LIVE_TF2_MAX_INTERP_RATIO "5"
@@ -99,13 +99,19 @@ ConVar tf_birthday( "tf_birthday", "0", FCVAR_NOTIFY | FCVAR_REPLICATED );
 ConVar tf_arena_force_class( "tf_arena_force_class", "0", FCVAR_NOTIFY | FCVAR_REPLICATED, "Force random classes in arena." );
 ConVar tf_arena_first_blood( "tf_arena_first_blood", "1", FCVAR_NOTIFY | FCVAR_REPLICATED, "Toggles first blood criticals" );
 ConVar tf_arena_first_blood_length( "tf_arena_first_blood_length", "5.0", FCVAR_NOTIFY | FCVAR_REPLICATED, "Duration of first blood criticals" );
+#if defined( PF2 )
+ConVar mp_waitingforplayers_time( "mp_waitingforplayers_time", "30", FCVAR_GAMEDLL, "WaitingForPlayers time length in seconds" );
+#else
 ConVar mp_waitingforplayers_time( "mp_waitingforplayers_time", (IsX360()?"15":"30"), FCVAR_GAMEDLL | FCVAR_DEVELOPMENTONLY, "WaitingForPlayers time length in seconds" );
+#endif
 ConVar tf_gravetalk( "tf_gravetalk", "1", FCVAR_NOTIFY, "Allows living players to hear dead players using text/voice chat." );
 ConVar tf_spectalk( "tf_spectalk", "1", FCVAR_NOTIFY, "Allows living players to hear spectators using text chat." );
 
 ConVar tf_arena_override_cap_enable_time( "tf_arena_override_cap_enable_time", "-1", FCVAR_REPLICATED | FCVAR_NOTIFY, "Overrides the time (in seconds) it takes for the capture point to become enable, -1 uses the level designer specified time." );
 
 ConVar tf_gamemode_arena( "tf_gamemode_arena", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_DEVELOPMENTONLY );
+
+ConVar hide_server( "hide_server", "0", FCVAR_GAMEDLL, "Whether the server should be hidden from the master server" );
 
 ConVar pf_civ_death_ends_round( "pf_civ_death_ends_round", "1", FCVAR_NOTIFY, "Civilian death causes a round loss for the bodyguards." );
 ConVar pf_use_escort_class_restrictions( "pf_use_escort_class_restrictions", "1", FCVAR_NOTIFY, "Use old class limits for escort." );
@@ -3206,12 +3212,12 @@ void CTFGameRules::CreateStandardEntities()
 
 	CBaseEntity::Create("vote_controller", vec3_origin, vec3_angle);
 
-	new CKickIssue();
-	new CRestartGameIssue();
-	new CScrambleTeams();
-	new CChangeLevelIssue();
-	new CNextLevelIssue();
-	new CExtendLevelIssue();
+	new CKickIssue( g_voteControllerGlobal );
+	new CRestartGameIssue( g_voteControllerGlobal );
+	new CScrambleTeams( g_voteControllerGlobal );
+	new CChangeLevelIssue( g_voteControllerGlobal );
+	new CNextLevelIssue( g_voteControllerGlobal );
+	new CExtendLevelIssue( g_voteControllerGlobal );
 }
 
 //-----------------------------------------------------------------------------
@@ -3564,12 +3570,12 @@ void CTFGameRules::ClientDisconnected( edict_t *pClient )
 	
 	if ( pPlayer )
 	{
-		if (g_voteController->IsPlayerBeingKicked(pPlayer))
-		{
-			engine->ServerCommand(UTIL_VarArgs("banid %i %i\n", sv_vote_kick_ban_duration.GetInt()*2, pPlayer->GetUserID()));
-			engine->ServerCommand("writeip\n");
-			engine->ServerCommand("writeid\n");
-		}
+		//if (g_voteControllerGlobal->IsPlayerBeingKicked(pPlayer))
+		//{
+		//	engine->ServerCommand(UTIL_VarArgs("banid %i %i\n", sv_vote_kick_ban_duration.GetInt()*2, pPlayer->GetUserID()));
+		//	engine->ServerCommand("writeip\n");
+		//	engine->ServerCommand("writeid\n");
+		//}
 		pPlayer->TeamFortress_ClientDisconnected();
 	}
 
@@ -5180,7 +5186,24 @@ int CTFGameRules::CountActivePlayers( void )
 			return 0;
 	}
 
-	return BaseClass::CountActivePlayers();
+	int i;
+	int count = 0;
+	CBasePlayer *pPlayer;
+
+	for ( i = 1; i <= gpGlobals->maxClients; i++ )
+	{
+		pPlayer = ToBasePlayer( UTIL_PlayerByIndex( i ) );
+
+		if ( pPlayer )
+		{
+			if ( pPlayer->IsReadyToPlay() )
+			{
+				count++;
+			}
+		}
+	}
+
+	return count;
 }
 #endif
 

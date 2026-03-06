@@ -9,7 +9,7 @@
 #include "movevars_shared.h"
 #include "util_shared.h"
 #include "datacache/imdlcache.h"
-#if defined ( TF_DLL ) || defined ( TF_CLIENT_DLL )
+#if defined ( TF_DLL ) || defined ( TF_CLIENT_DLL ) || defined( PF2 )
 #include "tf_gamerules.h"
 #endif
 
@@ -49,6 +49,13 @@
 #include "obstacle_pushaway.h"
 #ifdef SIXENSE
 #include "sixense/in_sixense.h"
+#endif
+
+#if defined( PF2_DLL )
+#include "tf_player.h"
+#elif defined( PF2_CLIENT )
+#include "c_tf_player.h"
+#include "pf_cvars.h"
 #endif
 
 // NVNT haptic utils
@@ -854,6 +861,9 @@ bool CBasePlayer::Weapon_Switch( CBaseCombatWeapon *pWeapon, int viewmodelindex 
 		if ( pViewModel )
 			pViewModel->RemoveEffects( EF_NODRAW );
 		ResetAutoaim( );
+#if defined( PF2 )
+		AbortReload();
+#endif
 		return true;
 	}
 	return false;
@@ -1615,8 +1625,30 @@ void CBasePlayer::CalcPlayerView( Vector& eyeOrigin, QAngle& eyeAngles, float& f
 
 	CalcViewRoll( eyeAngles );
 
+#if defined( PF2 )
+	CTFPlayer *pTFPlayer = ToTFPlayer( this );
+	if ( pTFPlayer->m_Shared.InCond( TF_COND_DIZZY ) )
+	{
+#ifdef CLIENT_DLL
+		if ( pf_accessibility_concussion.GetBool() )
+		{
+			VectorAdd( eyeAngles, pTFPlayer->ConcAngles( 4 ), eyeAngles );
+		}
+		else
+#endif
+		{
+			VectorAdd( eyeAngles, pTFPlayer->ConcAngles(), eyeAngles );
+		}
+	}
 	// Apply punch angle
 	VectorAdd( eyeAngles, m_Local.m_vecPunchAngle, eyeAngles );
+
+	// clamp it
+	eyeAngles.x = clamp( eyeAngles.x, -90.0f, 90.0f );
+#else
+	// Apply punch angle
+	VectorAdd( eyeAngles, m_Local.m_vecPunchAngle, eyeAngles );
+#endif
 
 #if defined( CLIENT_DLL )
 	if ( !prediction->InPrediction() )

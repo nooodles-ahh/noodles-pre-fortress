@@ -42,7 +42,7 @@
 	#include "NextBotManager.h"
 #endif
 
-#ifdef TF_DLL
+#if defined( TF_DLL ) || defined( PF2_DLL )
 	#include <unordered_set>
 	#include "hl2orange.spa.h"
 #endif
@@ -128,7 +128,7 @@ void cc_GotoNextMapInCycle()
 ConCommand skip_next_map( "skip_next_map", cc_SkipNextMapInCycle, "Skips the next map in the map rotation for the server." );
 ConCommand changelevel_next( "changelevel_next", cc_GotoNextMapInCycle, "Immediately changes to the next map in the map rotation for the server." );
 
-#ifndef TF_DLL		// TF overrides the default value of this convar
+#if !defined( TF_DLL ) && !defined( PF2 )		// TF overrides the default value of this convar
 ConVar mp_waitingforplayers_time( "mp_waitingforplayers_time", "0", FCVAR_GAMEDLL, "WaitingForPlayers time length in seconds" );
 #endif
 
@@ -353,7 +353,7 @@ bool CMultiplayRules::Init()
 	// override some values for multiplay.
 
 		// suitcharger
-#ifndef TF_DLL
+#if !defined( TF2_DLL ) && !defined( PF2_DLL )
 //=============================================================================
 // HPE_BEGIN:
 // [menglish] CS doesn't have the suitcharger either
@@ -1893,6 +1893,17 @@ ConVarRef suitcharger( "sk_suitcharger" );
 		pAllTalk->SetString( "tag", "alltalk" );
 
 		pCvarTagList->AddSubKey( pAllTalk );
+
+#if defined( PF2 )
+		// TODO Move to derived class
+		//
+		// pf_force_crits
+		KeyValues *pCrits = new KeyValues( "pf_force_crits" );
+		pCrits->SetString( "convar", "pf_force_crits" );
+		pCrits->SetString( "tag", "100% crits" );
+
+		pCvarTagList->AddSubKey( pCrits );
+#endif
 	}
 
 #else

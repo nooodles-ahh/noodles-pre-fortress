@@ -1644,7 +1644,7 @@ void CGameMovement::Friction( void )
 			}
 			else
 			{
-#if defined ( TF_DLL ) || defined ( TF_CLIENT_DLL )
+#if defined ( TF_DLL ) || defined ( TF_CLIENT_DLL ) || defined( PF2 )
 				control = (speed < sv_stopspeed.GetFloat()) ? sv_stopspeed.GetFloat() : speed;
 #else
 				control = (speed < sv_stopspeed.GetFloat()) ? (sv_stopspeed.GetFloat() * 2.0f) : speed;
@@ -4383,7 +4383,11 @@ void CGameMovement::Duck( void )
 	if ( ( mv->m_nButtons & IN_DUCK ) || player->m_Local.m_bDucking  || bInDuck || bDuckJump )
 	{
 		// DUCK
+#if defined( PF2 )
+		if ( ( !player->m_Local.m_bDucking || ( player->m_Local.m_bDucking && !bInDuck ) ) && ( ( mv->m_nButtons & IN_DUCK ) || bDuckJump ) )
+#else
 		if ( ( mv->m_nButtons & IN_DUCK ) || bDuckJump )
+#endif
 		{
 // XBOX SERVER ONLY
 #if !defined(CLIENT_DLL)

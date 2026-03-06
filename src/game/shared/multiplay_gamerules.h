@@ -249,6 +249,10 @@ public:
 
 	virtual bool IsManualMapChangeOkay( const char **pszReason ) OVERRIDE;
 
+#if defined( PF2 )
+	CUtlVector<char *> &GetMapList() { return m_MapList; }
+#endif
+
 protected:
 	virtual bool UseSuicidePenalty() { return true; }		// apply point penalty for suicide?
  	virtual float GetLastMajorEventTime( void ){ return -1.0f; }

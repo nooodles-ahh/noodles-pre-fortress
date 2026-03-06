@@ -129,6 +129,11 @@ extern ConVar tf_mm_servermode;
 #include "replay/ireplaysystem.h"
 #endif
 
+#if defined( PF2 )
+#include "fmtstr.h"
+#include "tf_inventory.h"
+#endif
+
 extern IToolFrameworkServer *g_pToolFrameworkServer;
 extern IParticleSystemQuery *g_pParticleSystemQuery;
 
@@ -729,6 +734,11 @@ bool CServerGameDLL::DLLInit( CreateInterfaceFn appSystemFactory,
 	{
 		return false;
 	}
+
+#if defined( PF2 )
+	// Also Inits TF Classes!
+	InitTFInventory();
+#endif
 
 	InvalidateQueryCache();
 
