@@ -1,0 +1,282 @@
+// NOTE:  THIS FILE IS AUTOMATICALLY REGENERATED, 
+//DO NOT EDIT THIS HEADER, YOUR COMMENTS WILL BE LOST IF YOU DO
+// User options script
+//
+// Format:
+//  Version [float]
+//  Options description followed by 
+//  Options defaults
+//
+// Option description syntax:
+//
+//  "cvar" { "Prompt" { type [ type info ] } { default } }
+//
+//  type = 
+//   BOOL   (a yes/no toggle)
+//   STRING
+//   NUMBER
+//   LIST
+//
+// type info:
+// BOOL                 no type info
+// NUMBER       min max range, use -1 -1 for no limits
+// STRING       no type info
+// LIST          delimited list of options value pairs
+//
+//
+// default depends on type
+// BOOL is "0" or "1"
+// NUMBER is "value"
+// STRING is "value"
+// LIST is "index", where index "0" is the first element of the list
+
+
+// Half-Life User Info Configuration Layout Script (stores last settings chosen, too)
+// File generated:  Mon Nov 22 21:00:50 AM
+//
+//
+// Cvar	-	Setting
+
+// -- ATTENTION --
+// IF YOU ADD AN ENTRY PLEASE ADD A "#Tooltip_" ENTRY, TO AVOID JUNK DATA IN THE TOOL TIPS
+// THE ENTRY DOES NOT HAVE TO BE IN THE LOCALIZATION, BUT IT NEEDS TO HAVE SOME SORT OF ENTRY
+//
+
+VERSION 1.1
+
+DESCRIPTION INFO_OPTIONS
+{
+	"category1"
+	{
+		"#TF_PF_OPT_CAT3"
+		{ CATEGORY }
+	}
+	
+	"pf_discord_rpc"
+	{
+		"#TF_discord"
+		"#Tooltip_discord"
+		{ BOOL }
+		{ "1" }
+	}
+
+	"pf_discord_class"
+	{
+		"#TF_discord_class"
+		"#Tooltip_discord_class"
+		{ BOOL }
+		{ "1" }
+	}
+
+	"category2"
+	{
+		"#TF_PF_OPT_CAT1"
+		{ CATEGORY }
+	}
+
+	"pf_team_colored_spy_cloak"
+	{
+		"#TF_coloredcloak"
+		"#Tooltip_coloredcloak"
+		{ BOOL }
+		{ "1" }
+	}
+
+	"pf_muzzleflash"
+	{
+		"#TF_muzzleflash"
+		"#Tooltip_muzzleflash"
+		{ BOOL }
+		{ "1" }
+	}
+
+	"pf_showchatbubbles"
+	{
+		"#TF_showchatbubbles"
+		"#Tooltip_showchatbubbles"
+		{ BOOL }
+		{ "1" }
+	}
+	
+	"cl_chat_sound"
+	{
+		"#TF_chatsound"
+		"#Tooltip_chatsound"
+		{ BOOL }
+		{ "1" }
+	}
+	
+	"pf_achievement_notifications"
+	{
+		"#PF_Achievement_Notifications"
+		"#Tooltip_Achievement_Notifications"
+		{ LIST
+			"#GameUI_None"			"0"
+			"#PF_Achievement_Notifications_Completed"			"1"
+			"#PF_Achievement_Notifications_All"		"2"
+		}
+		{ "2" }
+	}
+
+	"category3"
+	{
+		"#TF_PF_OPT_CAT2"
+		{ CATEGORY }
+	}
+
+	"pf_muzzlelight"
+	{
+		"#TF_muzzlelight"
+		"#Tooltip_muzzlelight"
+		{ BOOL }
+		{ "0" }
+	}
+
+	"pf_muzzlelightsprops"
+	{
+		"#TF_muzzlelightprop"
+		"#Tooltip_muzzlelightprop"
+		{ BOOL }
+		{ "0" }
+	}
+
+	"pf_burningplayerlight"
+	{
+		"#TF_dlightfire"
+		"#Tooltip_dlightfire"
+		{ BOOL }
+		{ "0" }
+	}
+
+	"pf_projectilelight"
+	{
+		"#TF_dlightprojectile"
+		"#Tooltip_dlightprojectile"
+		{ BOOL }
+		{ "0" }
+	}
+
+	"pf_cheapbulletsplash"
+	{
+		"#TF_cheapwater"
+		"#Tooltip_cheapwater"
+		{ BOOL }
+		{ "0" }
+	}
+
+	"pf_blood_impact_disable"
+	{
+		"#TF_violence"
+		"#Tooltip_violence"
+		{ BOOL }
+		{ "0" }
+	}
+
+	"cl_burninggibs"
+	{
+		"#PF_BurningGibs"
+		"#Tooltip_BurningGibs"
+		{ BOOL }
+		{ "0" }
+	}
+	
+	"category4"
+	{
+		"#TF_OptionCategory_Combat"
+		{ CATEGORY }
+	}
+	
+	"pf_grenade_press_throw"
+	{	
+		"#PF_Grenade_Press_Throw"
+		"#Tooltip_Grenade_Press_Throw"
+		{ BOOL }
+		{ "0" }
+	}
+	
+	"pf_accessibility_concussion"
+	{	
+		"#PF_Accessibility_Concussion"
+		"#Tooltip_Accessibility_Concussion"
+		{ BOOL }
+		{ "1" }
+	} 
+	
+	"category5"
+	{
+		"#TF_OptionCategory_HUD"
+		{ CATEGORY }
+	}
+	
+	"pf_freezecammodel"
+	{
+		"#PF_FreezeCamModel"
+		"#Tooltip_FreezeCamModel"
+		{ BOOL }
+		{ "1" }
+	}
+	
+	"pf_alerts_armor"
+	{
+		"#PF_Alerts_Armor"
+		"#Tooltip_Alerts_Armor"
+		{ BOOL }
+		{ "1" }
+	}
+	
+	"pf_alerts_armor_percentage"
+	{
+		"#PF_Alerts_Armor_Percentage"
+		"#Tooltip_Alerts_Armor_Percentage"
+		{ SLIDER 0 100 }
+		{ "49" }
+	}
+	
+	"pf_alerts_armor_volume"
+	{
+		"#PF_Alerts_Armor_Volume"
+		"#Tooltip_Alerts_Armor_Volume"
+		{ SLIDER 0 1 }
+		{ "0.4" }
+	}
+	
+	"pf_alerts_health"
+	{
+		"#PF_Alerts_Health"
+		"#Tooltip_Alerts_Health"
+		{ BOOL }
+		{ "1" }
+	}
+	
+	"pf_alerts_health_percentage"
+	{
+		"#PF_Alerts_Health_Percentage"
+		"#Tooltip_Alerts_Health_Percentage"
+		{ SLIDER 0 100 }
+		{ "49" }
+	}
+	
+	"pf_alerts_health_volume"
+	{
+		"#PF_Alerts_Health_Volume"
+		"#Tooltip_Alerts_Health_Volume"
+		{ SLIDER 0 1 }
+		{ "1.0" }
+	}
+	
+	"pf_grenade_hud_timer"
+	{	
+		"#PF_Grenade_Hud_Timer"
+		"#Tooltip_Grenade_Hud_Timer"
+		{ BOOL }
+		{ "1" }
+	}
+	
+	"pf_grenade_hud_timer_scale"
+	{
+		"#PF_Grenade_Hud_Timer_Scale"
+		"#Tooltip_Grenade_Hud_Timer_Scale"
+		{ SLIDER 16 128 }
+		{ "64" }
+	}
+}
