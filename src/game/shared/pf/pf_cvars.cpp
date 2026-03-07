@@ -17,7 +17,7 @@ ConVar pf_showchatbubbles( "pf_showchatbubbles", "1", FCVAR_ARCHIVE, "Show bubbl
 ConVar pf_cheapbulletsplash( "pf_cheapbulletsplash", "0", FCVAR_ARCHIVE | FCVAR_DONTRECORD, "Use the new, less intensive, bullet splash particle" );
 ConVar pf_team_colored_spy_cloak( "pf_team_colored_spy_cloak", "1", FCVAR_ARCHIVE | FCVAR_DONTRECORD );
 ConVar pf_blood_impact_disable( "pf_blood_impact_disable", "0", FCVAR_ARCHIVE | FCVAR_DONTRECORD, "Disable blood impact effects");
-ConVar pf_accessibility_concussion("pf_accessibility_concussion", "0", FCVAR_ARCHIVE | FCVAR_CLIENTDLL/*, TODO - description*/);
+ConVar pf_accessibility_concussion("pf_accessibility_concussion", "1", FCVAR_ARCHIVE | FCVAR_CLIENTDLL/*, TODO - description*/);
 ConVar pf_mainmenu_forceteam( "pf_mainmenu_forceteam", "-1", FCVAR_DONTRECORD | FCVAR_DEVELOPMENTONLY, "Force mainmenu to use a specific team", true, -1, true, 3, MainMenuForceTeamCallBack );
 
 ConVar pf_alerts_armor( "pf_alerts_armor", "0", FCVAR_ARCHIVE );
