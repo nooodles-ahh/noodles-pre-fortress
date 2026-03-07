@@ -389,16 +389,18 @@ bool CTFGameMovement::CheckJumpButton()
 		return false;
 	}
 
+	bool bScout = m_pTFPlayer->GetPlayerClass()->IsClass( TF_CLASS_SCOUT );
+	bool bAirDash = false;
 	bool bOnGround = ( player->GetGroundEntity() != NULL );
 
-	// Cannot jump will ducked.
-	if ( !pf_duckjump.GetBool() && ( player->GetFlags() & FL_DUCKING ) )
+	// Cannot jump while ducked.
+	if ( !pf_duckjump.GetBool() && ( player->GetFlags() & FL_DUCKING ) && !bScout )
 	{
-			return false;
+		return false;
 	}
 
 	// Cannot jump while in the unduck transition.
-	if ( ( player->m_Local.m_bDucking && (  player->GetFlags() & FL_DUCKING ) ) || ( player->m_Local.m_flDuckJumpTime > 0.0f ) )
+	if ( ( player->m_Local.m_bDucking && (  player->GetFlags() & FL_DUCKING ) ) || ( player->m_Local.m_flDuckJumpTime > 0.0f ) && !bScout )
 		return false;
 
 	// Cannot jump again until the jump button has been released.
@@ -412,8 +414,22 @@ bool CTFGameMovement::CheckJumpButton()
 	
 	if ( !bOnGround )
 	{
-		mv->m_nOldButtons |= IN_JUMP;
+		if ( bScout && !m_pTFPlayer->m_Shared.IsAirDashing() )
+		{
+			bAirDash = true;
+		}
+		else
+		{
+ 			mv->m_nOldButtons |= IN_JUMP;
 			return false;
+		}
+	}
+
+	// Check for an air dash.
+	if ( bAirDash )
+	{
+		AirDash();
+		return true;
 	}
 
 #ifdef PF2
