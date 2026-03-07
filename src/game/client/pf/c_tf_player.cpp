@@ -4054,11 +4054,17 @@ void C_TFPlayer::Simulate( void )
 void C_TFPlayer::LoadInventory( void )
 {
 	KeyValues* pInventory = Inventory->GetInventory( filesystem );
+	if ( !pInventory )
+		return;
+
 	for( int iClass = 0; iClass < TF_CLASS_COUNT_ALL; iClass++ )
 	{
 		for( int iSlot = 0; iSlot < INVENTORY_SLOTS; iSlot++ )
 		{
 			int iPreset = GetTFInventory()->GetLocalPreset( pInventory, iClass, iSlot );
+			if ( iPreset == 0 )
+				continue;
+
 			char szCmd[64];
 			Q_snprintf( szCmd, sizeof( szCmd ), "weaponpresetclass %d %d %d;", iClass, iSlot, iPreset );
 			engine->ExecuteClientCmd( szCmd );
