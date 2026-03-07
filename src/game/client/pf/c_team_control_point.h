@@ -43,6 +43,8 @@ private:
 	{
 		int iTeamPoseParam;
 		int iModelBodygroup;
+		float captureProgress;
+		float captureProgressLerped;
 	};
 	CUtlVector<teamdata_t>	m_TeamData;
 

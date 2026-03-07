@@ -30,10 +30,15 @@ void C_TeamControlPoint::Spawn( void )
 	}
 	m_TeamData.SetSize( g_Teams.Size() );
 
+	for ( int i = 0; i < m_TeamData.Count(); ++i )
+	{
+		m_TeamData[i].captureProgress = 0.f;
+		m_TeamData[i].captureProgressLerped = 0.f;
+	}
+
 	SetSimulatedEveryTick(true);
 	UseClientSideAnimation();
 }
-
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -43,16 +48,14 @@ void C_TeamControlPoint::OnDataChanged( DataUpdateType_t updateType )
 {
 	BaseClass::OnDataChanged( updateType );
 	
-	/*if( updateType == DATA_UPDATE_CREATED )
+	if( updateType == DATA_UPDATE_CREATED )
 	{
-		float flChangeTime = GetLastChangeTime( LATCH_SIMULATION_VAR );
-		Vector vecCurOrigin = GetLocalOrigin();
-
-		// Now stick our initial velocity into the interpolation history 
-		CInterpolatedVar< Vector > &interpolator = GetOriginInterpolator();
-		interpolator.ClearHistory();
-		interpolator.AddToHead( flChangeTime - 0.15f, &vecCurOrigin, false );
-	}*/
+		for ( int i = 0; i < m_TeamData.Count(); ++i )
+		{
+			m_TeamData[i].captureProgress = GetTeamCapPercentage( i );
+			m_TeamData[i].captureProgressLerped = m_TeamData[i].captureProgress;
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -69,15 +72,22 @@ void C_TeamControlPoint::Simulate()
 {
 	BaseClass::Simulate();
 
-	//StudioFrameAdvance();
-
 	for( int i = LAST_SHARED_TEAM + 1; i < m_TeamData.Count(); i++ )
 	{
 		// Skip spectator
 		if( i == TEAM_SPECTATOR )
 			continue;
 
-		float flPerc = GetTeamCapPercentage( i );
+		m_TeamData[i].captureProgress = GetTeamCapPercentage( i );
+
+		const float flDecay = 10.0f;
+		m_TeamData[i].captureProgressLerped = Lerp(
+			1.0f - expf( -flDecay * gpGlobals->frametime ),
+			m_TeamData[i].captureProgressLerped,
+			m_TeamData[i].captureProgress
+		);
+
+		float flPerc = m_TeamData[ i ].captureProgressLerped;
 
 		if( m_TeamData[ i ].iTeamPoseParam != -1 )
 		{
@@ -86,9 +96,9 @@ void C_TeamControlPoint::Simulate()
 
 		if( m_TeamData[ i ].iModelBodygroup != -1 )
 		{
-			SetBodygroup( m_TeamData[ i ].iModelBodygroup, 0.0f == flPerc );
+			SetBodygroup( m_TeamData[ i ].iModelBodygroup, 0.0f == m_TeamData[ i ].captureProgress );
 		}
-	};
+	}
 }
 
 //-----------------------------------------------------------------------------
