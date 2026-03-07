@@ -57,8 +57,7 @@ $Configuration "Debug"
 		// General
 		$AdditionalIncludeDirectories		"$SRCDIR\common;$SRCDIR\public;$SRCDIR\public\tier0;$SRCDIR\public\tier1"
 		$Resolve#UsingReferences
-		$DebugInformationFormat				"Program Database for Edit And Continue (/ZI)" [$WIN32]
-		$DebugInformationFormat				"Program Database (/Zi)" [$WIN64]
+		$DebugInformationFormat				"Program Database for Edit And Continue (/ZI)"
 		$SuppressStartupBanner		
 		$WarningLevel						"Level 4 (/W4)"
 		$TreatWarningsAsErrors
