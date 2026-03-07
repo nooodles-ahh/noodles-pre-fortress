@@ -30,6 +30,8 @@
 #include "pf_mainmenu_override.h"
 #include "ioverrideinterface.h"
 #include "tier0/icommandline.h"
+//Tony; so we can load localization at initialize
+#include <vgui/ILocalize.h>
 #endif
 
 #ifdef SIXENSE
@@ -199,6 +201,10 @@ bool VGui_Startup( CreateInterfaceFn appSystemFactory )
 	{
 		return false;
 	}
+
+#if defined( PF2 )
+	g_pVGuiLocalize->AddFile( "resource/pf2_%language%.txt", "MOD" );
+#endif
 	return true;
 }
 
