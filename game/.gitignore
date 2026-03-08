@@ -1,0 +1,19 @@
+# files we just don't want
+*.vmx
+*.ain
+*.prt
+*.lst
+*.dmx
+
+# specific files
+tf_inventory.txt
+voice_ban.dt
+server_blacklist.txt
+gamestate.txt
+viewed.res
+stats.txt
+
+# paths
+*/mapsrc/*.bsp
+*/materials/vgui/logos/spray.*
+*/materials/vgui/logos/ui/spray.*
