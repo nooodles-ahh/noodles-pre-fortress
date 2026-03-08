@@ -224,11 +224,13 @@ void VGui_CreateGlobalPanels( void )
 	messagechars->Create( gameToolParent );
 
 #if defined( PF2 )
+#if 0
 	if ( !CommandLine()->CheckParm( "-oldui" ) && !ToolsEnabled() )
 	{
 		OverrideUI->Create( NULL );
 		OverrideGameUI();
 	}
+#endif
 
 	CreatePFInventoryPanel();
 #endif
