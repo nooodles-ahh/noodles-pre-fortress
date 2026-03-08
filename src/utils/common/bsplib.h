@@ -39,6 +39,9 @@ class IZip;
 
 // this is only true in vrad
 extern bool g_bHDR;
+#if defined( GAME_NPF )
+extern bool g_remapLightingLumps;
+#endif
 
 // default width/height of luxels in world units.
 #define DEFAULT_LUXEL_SIZE ( 16.0f )
@@ -114,13 +117,25 @@ extern  int             numorigfaces;
 extern  dface_t         dorigfaces[MAX_MAP_FACES];
 
 extern	int				g_numprimitives;
+#if defined( GAME_NPF )
+extern CUtlVector<dprimitive_t> g_primitives;
+#else
 extern	dprimitive_t	g_primitives[MAX_MAP_PRIMITIVES];
+#endif
 
 extern	int				g_numprimverts;
-extern	dprimvert_t		g_primverts[MAX_MAP_PRIMVERTS];
+#if defined( GAME_NPF )
+extern CUtlVector<dprimvert_t> g_primverts;
+#else
+extern dprimvert_t g_primverts[MAX_MAP_PRIMVERTS];
+#endif
 
 extern	int				g_numprimindices;
+#if defined( GAME_NPF )
+extern	CUtlVector<unsigned short>	g_primindices;
+#else
 extern	unsigned short	g_primindices[MAX_MAP_PRIMINDICES];
+#endif
 
 extern	int			    numfaces;
 extern	dface_t		    dfaces[MAX_MAP_FACES];

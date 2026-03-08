@@ -161,7 +161,11 @@ void TestLine( const FourVectors& start, const FourVectors& stop,
 	RayTracingResult rt_result;
 	CCoverageCountTexture coverageCallback;
 
+#if defined( GAME_NPF )
+	g_RtEnv.Trace4Rays( myrays, Four_Zeros, len, &rt_result, TRACE_ID_STATICPROP | ( static_prop_index_to_ignore & ~TRACE_ID_STATICPROP ), g_bTextureShadows ? &coverageCallback : 0 );
+#else
 	g_RtEnv.Trace4Rays(myrays, Four_Zeros, len, &rt_result, TRACE_ID_STATICPROP | static_prop_index_to_ignore, g_bTextureShadows ? &coverageCallback : 0 );
+#endif
 
 	// Assume we can see the targets unless we get hits
 	float visibility[4];
@@ -172,6 +176,13 @@ void TestLine( const FourVectors& start, const FourVectors& stop,
 		     ( rt_result.HitDistance.m128_f32[i] < len.m128_f32[i] ) )
 		{
 			visibility[i] = 0.0f;
+#if defined( GAME_NPF )
+			// assume full visiblity for sky otherwise the skybox causes occlusion
+			if ( ( static_prop_index_to_ignore & TRACE_ID_SKY ) &&
+				 ( g_RtEnv.OptimizedTriangleList[rt_result.HitIds[i]].m_Data.m_IntersectData.m_nTriangleID &
+				   TRACE_ID_SKY ) )
+				visibility[i] = 1.0f;
+#endif
 		}
 	}
 	*pFractionVisible = LoadUnalignedSIMD( visibility );
@@ -489,10 +500,36 @@ dmodel_t *BrushmodelForEntity( entity_t *pEntity )
 	return NULL;
 }
 
+#if defined( GAME_NPF )
+CUtlRBTree<int, int> transparentPlanes;
+#endif
 void AddBrushToRaytraceEnvironment( dbrush_t *pBrush, const VMatrix &xform )
 {
 	if ( !( pBrush->contents & MASK_OPAQUE ) )
+#if !defined( GAME_NPF )
 		return;
+#else
+	{
+		if ( g_bWorldTextureShadows && ( pBrush->contents & ( CONTENTS_WINDOW | CONTENTS_GRATE ) ) )
+		{
+			for ( int i = 0; i < pBrush->numsides; i++ )
+			{
+				dbrushside_t *side = &dbrushsides[pBrush->firstside + i];
+				texinfo_t *tx = &texinfo[side->texinfo];
+
+				if ( tx->flags & ( SURF_SKY | SURF_NODRAW ) || side->dispinfo )
+					continue;
+
+				if ( side->bevel )
+					continue;
+
+				// take note of the plane to be added later
+				transparentPlanes.InsertIfNotFound( side->planenum );
+			}
+		}
+		return;
+	}
+#endif
 
 	Vector v0, v1, v2;
 	for (int i = 0; i < pBrush->numsides; i++ )
@@ -592,10 +629,21 @@ void ExtractBrushEntityShadowCasters()
 	}
 }
 
+#if defined( GAME_NPF )
+bool ShadowTextureList_FindOrLoadIfValid( const char *pMaterialName, int *pIndex );
+void ShadowTextureList_GetTextureAttributes( int shadowTextureIndex, int &w, int &h, VMatrix &mat );
+float ShadowTextureList_ComputeTextureCoverage( int shadowTextureIndex, const Vector2D &t0, const Vector2D &t1, const Vector2D &t2 );
+int ShadowTextureList_AddMaterialEntry( int shadowTextureIndex, const Vector2D &t0, const Vector2D &t1, const Vector2D &t2 );
+#endif
+
 void AddBrushesForRayTrace( void )
 {
 	if ( !nummodels )
 		return;
+
+#if defined( GAME_NPF )
+	SetDefLessFunc( transparentPlanes );
+#endif
 
 	VMatrix identity;
 	identity.Identity();
@@ -615,7 +663,12 @@ void AddBrushesForRayTrace( void )
 		dface_t *face = &g_pFaces[ndxFace];
 
 		texinfo_t *tx = &texinfo[face->texinfo];
+#if defined( GAME_NPF )
+		bool transparentFace = transparentPlanes.Find( face->planenum ) != transparentPlanes.InvalidIndex();
+		if ( !transparentFace && !( tx->flags & SURF_SKY ) )
+#else
 		if ( !( tx->flags & SURF_SKY ) )
+#endif
 			continue;
 
 		Vector points[MAX_POINTS_ON_WINDING];
@@ -642,6 +695,62 @@ void AddBrushesForRayTrace( void )
 			dvertex_t *dv = &dvertexes[v];
 			points[j] = dv->point;
 		}
+
+#if defined( GAME_NPF )
+		if ( transparentFace )
+		{
+			int shadowTextureIndex = -1;
+			const char *pMaterialName = TexDataStringTable_GetString( dtexdata[tx->texdata].nameStringTableID );
+			char texturePath[MAX_PATH];
+			V_sprintf_safe( texturePath, "materials/%s.vmt", pMaterialName );
+			if ( ShadowTextureList_FindOrLoadIfValid( texturePath, &shadowTextureIndex ) && shadowTextureIndex != -1 )
+			{
+				int texW = 1;
+				int texH = 1;
+				VMatrix texMatrix;
+				ShadowTextureList_GetTextureAttributes( shadowTextureIndex, texW, texH, texMatrix );
+
+				for ( int j = 2; j < face->numedges; j++ )
+				{
+					// $BaseTextureTransform
+					// Texture shift
+					const float textureShiftX = tx->textureVecsTexelsPerWorldUnits[0][3];
+					const float textureShiftY = tx->textureVecsTexelsPerWorldUnits[1][3];
+
+					// UV Vectors (X Y Z)
+					Vector u( tx->textureVecsTexelsPerWorldUnits[0][0], tx->textureVecsTexelsPerWorldUnits[0][1],
+								tx->textureVecsTexelsPerWorldUnits[0][2] );
+					Vector v( tx->textureVecsTexelsPerWorldUnits[1][0], tx->textureVecsTexelsPerWorldUnits[1][1],
+								tx->textureVecsTexelsPerWorldUnits[1][2] );
+
+					// Apply our $BaseTextureTransform
+					u = texMatrix.VMul3x3( u );
+					v = texMatrix.VMul3x3( v );
+
+					const Vector2D t0( ( DOT_PRODUCT( points[0], u ) + textureShiftX ) / texW,
+										( DOT_PRODUCT( points[0], v ) + textureShiftY ) / texH );
+					const Vector2D t1( ( DOT_PRODUCT( points[j - 1], u ) + textureShiftX ) / texW,
+										( DOT_PRODUCT( points[j - 1], v ) + textureShiftY ) / texH );
+					const Vector2D t2( ( DOT_PRODUCT( points[j], u ) + textureShiftX ) / texW,
+										( DOT_PRODUCT( points[j], v ) + textureShiftY ) / texH );
+
+					Vector fullCoverage( ShadowTextureList_ComputeTextureCoverage( shadowTextureIndex, t0, t1, t2 ), 0, 0 );
+					if ( fullCoverage.x < 1.f )
+					{
+						int materialIndex = ShadowTextureList_AddMaterialEntry( shadowTextureIndex, t0, t1, t2 );
+						g_RtEnv.AddTriangle( TRACE_ID_OPAQUE, points[0], points[j - 1], points[j], fullCoverage,
+												FCACHETRI_TRANSPARENT, materialIndex );
+					}
+					else
+					{
+						g_RtEnv.AddTriangle( TRACE_ID_OPAQUE, points[0], points[j - 1], points[j], fullCoverage, 0,
+												-1 );
+					}
+				}
+			}
+			continue;
+		}
+#endif
 
 		for ( int j = 2; j < face->numedges; j++ )
 		{

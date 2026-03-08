@@ -68,9 +68,19 @@ char		outbase[32];
 
 char		g_szEmbedDir[MAX_PATH] = { 0 };
 
+#if defined( GAME_NPF )
+int g_blockSize = 1024;
+int g_evilWaterLeafLimit = 0;
+#endif
+
 // HLTOOLS: Introduce these calcs to make the block algorithm proportional to the proper 
 // world coordinate extents.  Assumes square spatial constraints.
+#if defined( GAME_NPF )
+#define BLOCKS_SIZE		g_blockSize
+#define BLOCK_ALLOC_SIZE ( g_blockSize + 2 )
+#else
 #define BLOCKS_SIZE		1024
+#endif
 #define BLOCKS_SPACE	(COORD_EXTENT/BLOCKS_SIZE)
 #define BLOCKX_OFFSET	((BLOCKS_SPACE/2)+1)
 #define BLOCKY_OFFSET	((BLOCKS_SPACE/2)+1)
@@ -81,8 +91,11 @@ int			block_xl = BLOCKS_MIN, block_xh = BLOCKS_MAX, block_yl = BLOCKS_MIN, block
 
 int			entity_num;
 
-
+#if defined( GAME_NPF )
+node_t		**block_nodes;
+#else
 node_t		*block_nodes[BLOCKS_SPACE+2][BLOCKS_SPACE+2];
+#endif
 
 
 //-----------------------------------------------------------------------------
@@ -107,7 +120,11 @@ node_t	*BlockTree (int xl, int yl, int xh, int yh)
 
 	if (xl == xh && yl == yh)
 	{
+#if defined( GAME_NPF )
+		node = block_nodes[( ( xl + BLOCKX_OFFSET ) * BLOCK_ALLOC_SIZE ) + yl + BLOCKY_OFFSET];
+#else
 		node = block_nodes[xl+BLOCKX_OFFSET][yl+BLOCKY_OFFSET];
+#endif
 		if (!node)
 		{	// return an empty leaf
 			node = AllocNode ();
@@ -181,7 +198,11 @@ void ProcessBlock_Thread (int threadnum, int blocknum)
 		node = AllocNode ();
 		node->planenum = PLANENUM_LEAF;
 		node->contents = CONTENTS_SOLID;
+#if defined( GAME_NPF )
+		block_nodes[( ( xblock + BLOCKX_OFFSET ) * BLOCK_ALLOC_SIZE ) + yblock + BLOCKY_OFFSET] = node;
+#else
 		block_nodes[xblock+BLOCKX_OFFSET][yblock+BLOCKY_OFFSET] = node;
+#endif
 		return;
 	}    
 
@@ -191,7 +212,11 @@ void ProcessBlock_Thread (int threadnum, int blocknum)
 
 	tree = BrushBSP (brushes, mins, maxs);
 	
+#if defined( GAME_NPF )
+	block_nodes[( ( xblock + BLOCKX_OFFSET ) * BLOCK_ALLOC_SIZE ) + yblock + BLOCKY_OFFSET] = tree->headnode;
+#else
 	block_nodes[xblock+BLOCKX_OFFSET][yblock+BLOCKY_OFFSET] = tree->headnode;
+#endif
 }
 
 
@@ -217,6 +242,11 @@ void ProcessWorldModel (void)
 	brush_start = e->firstbrush;
 	brush_end = brush_start + e->numbrushes;
 	leaked = false;
+
+#if defined( GAME_NPF )
+	block_nodes = (node_t **)malloc( BLOCK_ALLOC_SIZE * BLOCK_ALLOC_SIZE * sizeof( node_t ** ) );
+	V_memset( block_nodes, 0, BLOCK_ALLOC_SIZE * BLOCK_ALLOC_SIZE * sizeof( node_t * ) );
+#endif
 
 	//
 	// perform per-block operations
@@ -1172,6 +1202,20 @@ int RunVBSP( int argc, char **argv )
 			g_pFullFileSystem->AddSearchPath( g_szEmbedDir, "GAME", PATH_ADD_TO_TAIL );
 			g_pFullFileSystem->AddSearchPath( g_szEmbedDir, "MOD", PATH_ADD_TO_TAIL );
 		}
+#if defined( GAME_NPF )
+		else if ( !V_stricmp( argv[i], "-blocksize" ) )
+		{
+			g_blockSize = atoi( argv[i + 1] );
+			// update our block variables
+			block_xl = BLOCKS_MIN, block_xh = BLOCKS_MAX, block_yl = BLOCKS_MIN, block_yh = BLOCKS_MAX;
+			i++;
+		}
+		else if ( !V_stricmp( argv[i], "-EvilWaterLeafLimit" ) )
+		{
+			g_evilWaterLeafLimit = atoi( argv[i + 1] );
+			i++;
+		}
+#endif
 		else if (argv[i][0] == '-')
 		{
 			Warning("VBSP: Unknown option \"%s\"\n\n", argv[i]);
@@ -1258,6 +1302,9 @@ int RunVBSP( int argc, char **argv )
 				"  -nox360		   : Disable generation Xbox360 version of vsp (default)\n"
 				"  -replacematerials : Substitute materials according to materialsub.txt in content\\maps\n"
 				"  -FullMinidumps  : Write large minidumps on crash.\n"
+#if defined( GAME_NPF )
+				"  -blocksize #	   :  Control the size of each grid square that vbsp chops the level on. (default: 1024).\n"
+#endif
 				);
 			}
 

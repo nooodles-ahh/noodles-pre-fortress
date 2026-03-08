@@ -432,7 +432,7 @@ public:
 
 private:
 
-	CPhysConvex *CPlaneList::BuildConvexForBrush( int brushnumber, float shrink, CPhysCollide *pCollideTest, float shrinkMinimum );
+	CPhysConvex *BuildConvexForBrush( int brushnumber, float shrink, CPhysCollide *pCollideTest, float shrinkMinimum );
 
 public:
 	CUtlVector<CPhysConvex *>	m_convex;
@@ -1053,6 +1053,18 @@ static void Flood_FindConnectedWaterVolumes_r( CUtlVector<node_t *> &list, node_
 
 	visited.Set( pLeaf->diskId );
 	list.AddToTail( pLeaf );
+
+#if defined( GAME_NPF )
+	// HACK HACK HACK HACK
+	// In beta 2fort we have the sewer section with a different water height, which causes the plane to be
+	// really far above the entrance. In my lazy experimenting this is somehow a workable solution
+	// 20 seemed like a good value for 2fort.
+	if ( g_evilWaterLeafLimit > 0 )
+	{
+		if ( list.Count() > g_evilWaterLeafLimit )
+			return;
+	}
+#endif
 
 	baseleaf.minZ = min( pLeaf->mins.z, baseleaf.minZ );
 

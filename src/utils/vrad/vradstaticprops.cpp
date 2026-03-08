@@ -529,7 +529,11 @@ bool LoadVTXFile( char const* pModelName, const studiohdr_t *pStudioHdr, CUtlBuf
 
 	// construct filename
 	Q_StripExtension( pModelName, filename, sizeof( filename ) );
+#if defined( GAME_NPF )
+	strcat( filename, ".dx90.vtx" );
+#else
 	strcat( filename, ".dx80.vtx" );
+#endif
 
 	if ( !LoadFile( filename, buf ) )
 	{
@@ -703,9 +707,45 @@ public:
 			if ( pVMT->LoadFromBuffer( pMaterialName, buf ) )
 			{
 				bFound = true;
+#if defined( GAME_NPF )
+				// if this is a patch material we need to merge the included KV's
+				if ( !V_stricmp( pVMT->GetName(), "patch" ) )
+				{
+					int depth = 0;
+					const int maxPatchDepth = 2; // potential of recursive patches
+					while ( depth++ < maxPatchDepth )
+					{
+						KeyValues *includeKV = pVMT->FindKey( "include" );
+						if ( !includeKV )
+							break;
+
+						const char *includedVMT = includeKV->GetString();
+						if ( !includedVMT )
+							break;
+
+						CUtlBuffer bufPatch( 0, 0, CUtlBuffer::TEXT_BUFFER );
+						LoadFileIntoBuffer( bufPatch, includedVMT );
+						KeyValuesAD kvPatchVMT( "vmt" );
+						if ( kvPatchVMT->LoadFromBuffer( includedVMT, bufPatch ) )
+						{
+							pVMT->RemoveSubKey( includeKV );
+							pVMT->RecursiveMergeKeyValues( kvPatchVMT );
+							if ( V_stricmp( kvPatchVMT->GetName(), "patch" ) )
+								break;
+						}
+					}
+				}
+#endif
+
 				if ( pVMT->FindKey("$translucent") || pVMT->FindKey("$alphatest") )
 				{
+#if defined( GAME_NPF )
+					KeyValues *pBaseTexture = pVMT->FindKey( "%alphatexture" );
+					if ( !pBaseTexture )
+						pBaseTexture = pVMT->FindKey( "$basetexture" );
+#else
 					KeyValues *pBaseTexture = pVMT->FindKey("$basetexture");
+#endif
 					if ( pBaseTexture )
 					{
 						const char *pBaseTextureName = pBaseTexture->GetString();
@@ -729,6 +769,34 @@ public:
 								m_Textures[index].clampV = bClampV;
 								delete[] pImageBits;
 							}
+							
+#if defined( GAME_NPF )
+							// build a matrix transformation for the material to be used in casting later
+							const char *pBaseTextureTransform = pVMT->GetString( "$basetexturetransform", nullptr );
+							if ( *pIndex != -1 && pBaseTextureTransform )
+							{
+								Vector center( 0, 0, 0 );
+								Vector scale( 1, 1, 1 );
+								float rotate;
+								Vector translate;
+
+								if ( sscanf( pBaseTextureTransform, "center %f %f scale %f %f rotate %f translate %f %f", 
+									&center.x,&center.y, &scale.x, &scale.y, &rotate, &translate.x, &translate.y ) == 7 )
+								{
+									VMatrix transform;
+									transform.Identity();
+									// Apply our center translation first
+									transform.SetTranslation( center );
+									// typical TRS transformation after
+									transform = transform.Scale( scale );
+									VMatrix matRotation;
+									MatrixBuildRotateZ( matRotation, rotate );
+									MatrixMultiply( matRotation, transform, transform );
+									transform.PostTranslate( translate );
+									m_Textures[*pIndex].transform = transform;
+								}
+							}
+#endif
 						}
 					}
 				}
@@ -791,6 +859,31 @@ public:
 		float vmax = max(t0.y, t1.y);
 		vmax = max(vmax, t2.y);
 
+#if defined( GAME_NPF )
+		const alphatexture_t &tex = m_Textures.Element( shadowTextureIndex );
+		int texWidth = tex.width;
+		int texHeight = tex.height;
+
+		int u0 = (int)( umin * texWidth );
+		int u1 = (int)( umax * texWidth );
+		int v0 = (int)( vmin * texHeight );
+		int v1 = (int)( vmax * texHeight );
+
+		unsigned int total = 0;
+		unsigned int count = 0;
+		for ( int v = v0; v <= v1; ++v )
+		{
+			int wrappedV = ( ( v % texHeight ) + texHeight ) % texHeight;
+			int row = wrappedV * texWidth;
+
+			for ( int u = u0; u <= u1; ++u )
+			{
+				int wrappedU = ( ( u % texWidth ) + texWidth ) % texWidth;
+				total += tex.pAlphaTexels[row + wrappedU];
+				count++;
+			}
+		}
+#else
 		// UNDONE: Do something about tiling
 		umin = clamp(umin, 0, 1);
 		umax = clamp(umax, 0, 1);
@@ -815,6 +908,7 @@ public:
 				count++;
 			}
 		}
+#endif
 		if ( count )
 		{
 			float coverage = float(total) / (count * 255.0f);
@@ -855,11 +949,16 @@ public:
 		bool clampU;
 		bool clampV;
 		unsigned char *pAlphaTexels;
+		VMatrix transform;
 
 		void InitFromRGB8888( int w, int h, unsigned char *pTexels )
 		{
 			width = w;
 			height = h;
+#if defined( GAME_NPF )
+			allowBackface = false;
+			transform.Identity();
+#endif
 			pAlphaTexels = new unsigned char[w*h];
 			for ( int i = 0; i < h; i++ )
 			{
@@ -884,6 +983,35 @@ public:
 
 // global to keep the shadow-casting texture list and their alpha bits
 CShadowTextureList g_ShadowTextureList;
+
+#if defined( GAME_NPF )
+// Nooodles: previously I made CShadowTextureList an externally accessible class, but I want a
+// short less destructive diff and I don't want to ifdef everything
+bool ShadowTextureList_FindOrLoadIfValid( const char *pMaterialName, int *pIndex )
+{
+	return g_ShadowTextureList.FindOrLoadIfValid( pMaterialName, pIndex );
+}
+
+void ShadowTextureList_GetTextureAttributes( int shadowTextureIndex, int &w, int &h, VMatrix &mat )
+{
+	w = g_ShadowTextureList.m_Textures[shadowTextureIndex].width;
+	h = g_ShadowTextureList.m_Textures[shadowTextureIndex].height;
+	mat = g_ShadowTextureList.m_Textures[shadowTextureIndex].transform;
+}
+
+float ShadowTextureList_ComputeTextureCoverage( int shadowTextureIndex, const Vector2D &t0, const Vector2D &t1,
+											const Vector2D &t2 )
+{
+	return g_ShadowTextureList.ComputeCoverageForTriangle( shadowTextureIndex, t0, t1, t2 );
+}
+
+int ShadowTextureList_AddMaterialEntry( int shadowTextureIndex, const Vector2D &t0, const Vector2D &t1,
+										 const Vector2D &t2 )
+{
+	return g_ShadowTextureList.AddMaterialEntry( shadowTextureIndex, t0, t1, t2 );
+}
+
+#endif
 
 float ComputeCoverageFromTexture( float b0, float b1, float b2, int32 hitID )
 {
@@ -997,7 +1125,11 @@ void CVradStaticPropMgr::CreateCollisionModel( char const* pModelName )
 		m_StaticPropDict[i].m_VtxBuf.Purge();
 	}
 
+#if defined( GAME_NPF )
+	if ( g_bPropTextureShadows )
+#else
 	if ( g_bTextureShadows )
+#endif
 	{
 		if ( (pHdr->flags & STUDIOHDR_FLAGS_CAST_TEXTURE_SHADOWS) || IsModelTextureShadowsForced(pModelName) )
 		{
@@ -1873,7 +2005,11 @@ void CVradStaticPropMgr::AddPolysForRayTrace( void )
 		if ( !pStudioHdr || !pVtxHdr )
 		{
 			// must have model and its verts for decoding triangles
+#if defined( GAME_NPF )
+			continue;
+#else
 			return;
+#endif
 		}
 		// only init the triangle table the first time
 		bool bInitTriangles = dict.m_triangleMaterialIndex.Count() ? false : true;

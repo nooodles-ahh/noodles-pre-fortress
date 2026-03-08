@@ -94,7 +94,7 @@ bool g_bOnlyStaticProps = false;
 bool g_bShowStaticPropNormals = false;
 
 
-float		gamma = 0.5;
+float		gamma_value = 0.5;
 float		indirect_sun = 1.0;
 float		reflectivityScale = 1.0;
 qboolean	do_extra = true;
@@ -120,6 +120,16 @@ bool        g_bStaticPropPolys = false;
 bool        g_bTextureShadows = false;
 bool        g_bDisablePropSelfShadowing = false;
 
+#if defined( GAME_NPF )
+bool g_aoEnabled = false;
+int g_aoSamples = 16;
+#define AO_RADIUS_DEFAULT 18.f
+float g_aoRadius = AO_RADIUS_DEFAULT;
+bool g_aoAmbientOnly = false;
+bool g_aoNoDirectional = false;
+bool g_bWorldTextureShadows = false;
+bool g_bPropTextureShadows = false;
+#endif
 
 CUtlVector<byte> g_FacesVisibleToLights;
 
@@ -2411,6 +2421,9 @@ int ParseCommandLine( int argc, char **argv, bool *onlydetail )
 		else if ( !Q_stricmp( argv[i], "-textureshadows" ) )
 		{
 			g_bTextureShadows = true;
+#if defined( GAME_NPF )
+			g_bPropTextureShadows = true;
+#endif
 		}
 		else if ( !strcmp(argv[i], "-dump") )
 		{
@@ -2514,6 +2527,9 @@ int ParseCommandLine( int argc, char **argv, bool *onlydetail )
 		else if (!Q_stricmp(argv[i],"-final"))
 		{
 			g_flSkySampleScale = 16.0;
+#if defined( GAME_NPF )
+			g_aoSamples = 32;
+#endif
 		}
 		else if (!Q_stricmp(argv[i],"-extrasky"))
 		{
@@ -2698,6 +2714,81 @@ int ParseCommandLine( int argc, char **argv, bool *onlydetail )
 				return -1;
 			}
 		}
+#if defined( GAME_NPF )
+		else if(!Q_stricmp(argv[i],"-remaplightinglumps"))
+		{
+			g_remapLightingLumps = true;
+		}
+		else if ( !V_stricmp( argv[i], "-ambientocclusion" ) || !V_stricmp( argv[i], "-ao" ) )
+		{
+			g_aoEnabled = true;
+		}
+		else if ( !V_stricmp( argv[i], "-aosamples" ) )
+		{
+			if ( ++i < argc )
+			{
+				g_aoSamples = atoi( argv[i] );
+				if ( g_aoSamples < 1 )
+				{
+					Warning( "Error: expected positive value after '-aosamples'\n" );
+					return -1;
+				}
+			}
+			else
+			{
+				Warning( "Error: expected a value after '-aosamples'\n" );
+				return -1;
+			}
+		}
+		else if ( !V_stricmp( argv[i], "-aoradius" ) )
+		{
+			if ( ++i < argc )
+			{
+				g_aoRadius = (float)atof( argv[i] );
+				if ( g_aoRadius <= 0.f )
+				{
+					Warning( "Error: expected positive value after '-aoradius'\n" );
+					return -1;
+				}
+			}
+			else
+			{
+				Warning( "Error: expected a value after '-aoradius'\n" );
+				return -1;
+			}
+		}
+		// does the same as above but so mappers don't lose their minds
+		else if ( !V_stricmp( argv[i], "-aoscale" ) )
+		{
+			if ( ++i < argc )
+			{
+				g_aoRadius = AO_RADIUS_DEFAULT * (float)atof( argv[i] );
+				if ( g_aoRadius <= 0.f )
+				{
+					Warning( "Error: expected positive value after '-aoscale'\n" );
+					return -1;
+				}
+			}
+			else
+			{
+				Warning( "Error: expected a value after '-aoscale'\n" );
+				return -1;
+			}
+		}
+		else if ( !V_stricmp( argv[i], "-aoskipdirectional" ) )
+		{
+			g_aoNoDirectional = true;
+		}
+		else if ( !V_stricmp( argv[i], "-aoambientonly" ) )
+		{
+			g_aoAmbientOnly = true;
+		}
+		else if ( !V_stricmp( argv[i], "-worldtextureshadows" ) )
+		{
+			g_bTextureShadows = true;
+			g_bWorldTextureShadows = true;
+		}
+#endif
 
 #if ALLOWDEBUGOPTIONS
 		else if (!Q_stricmp(argv[i],"-scale"))
@@ -2876,6 +2967,13 @@ void PrintUsage( int argc, char **argv )
 		"  -textureshadows : Allows texture alpha channels to block light - rays intersecting alpha surfaces will sample the texture\n"
 		"  -noskyboxrecurse : Turn off recursion into 3d skybox (skybox shadows on world)\n"
 		"  -nossprops      : Globally disable self-shadowing on static props\n"
+#if defined( GAME_NPF )
+		"  -remaplightinglumps : Remap lighting data to from HDR to LDR or vice versa\n"
+		"  -ao : Enable lightmapped ambient occlusion\n"
+		"  -aoradius : Set the radius of simulated ambient occlusion (default: 18)\n"
+		"  -aosamples : How many samples to use for simulated ambient occlusion (default: 16)\n"
+		"  -WorldTextureShadows : Allow world geometry to cast texture shadows\n",
+#endif
 		"\n"
 #if 1 // Disabled for the initial SDK release with VMPI so we can get feedback from selected users.
 		);

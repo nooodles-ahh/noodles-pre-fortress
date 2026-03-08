@@ -101,7 +101,13 @@ void CVRADDispColl::CalcSampleRadius2AndBox( dface_t *pFace )
 	m_flSampleHeight = flHeight;
 
 	// Calculate the sample radius squared.
+#if defined( GAME_NPF )
+	float flSampleRadius = sqrt( ( ( flWidth * flWidth ) + ( flHeight * flHeight ) ) );
+	if ( g_bLargeDispSampleRadius )
+		flSampleRadius *= 2.2f; // RADIALDIST2;
+#else
 	float flSampleRadius = sqrt( ( ( flWidth * flWidth ) + ( flHeight * flHeight ) ) ) * 2.2f;//RADIALDIST2; 
+#endif
 	if ( flSampleRadius > g_flMaxDispSampleSize )
 	{
 		flSampleRadius = g_flMaxDispSampleSize;

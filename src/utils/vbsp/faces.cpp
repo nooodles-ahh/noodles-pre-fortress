@@ -683,10 +683,17 @@ void FixFaceEdges (face_t **pList, face_t *f)
 		newPrim.vertCount = 0;
 		newPrim.type = PRIM_TRILIST;
 		g_numprimindices += newPrim.indexCount;
+#if defined( GAME_NPF )
+		if ( g_numprimindices >= g_primindices.Count() )
+			g_primindices.AddMultipleToTail( MAX_MAP_PRIMINDICES );
+		if ( g_numprimitives >= g_primitives.Count() )
+			g_primitives.AddMultipleToTail( MAX_MAP_PRIMITIVES );
+#else
 		if ( g_numprimitives > MAX_MAP_PRIMITIVES || g_numprimindices > MAX_MAP_PRIMINDICES )
 		{
 			Error("Too many t-junctions to fix up! (%d prims, max %d :: %d indices, max %d)\n", g_numprimitives, MAX_MAP_PRIMITIVES, g_numprimindices, MAX_MAP_PRIMINDICES );
 		}
+#endif
 		for ( i = 0; i < outIndices.Count(); i++ )
 		{
 			g_primindices[newPrim.firstIndex + i] = outIndices[i];
@@ -1492,11 +1499,16 @@ int AddWindingToPrimverts( const winding_t *w, unsigned short *pIndices, int ver
 			g_primverts[j].pos = w->p[i];
 			vertCount++;
 			g_numprimverts++;
+#if defined( GAME_NPF )
+			if ( g_numprimverts >= g_primverts.Count() )
+				g_primverts.AddMultipleToTail( MAX_MAP_PRIMVERTS );
+#else
 			if ( g_numprimverts > MAX_MAP_PRIMVERTS )
 			{
 				Error( "Exceeded max water verts.\nIncrease surface subdivision size or lower your subdivision size in vmt files! (%d>%d)\n", 
 					( int )g_numprimverts, ( int )MAX_MAP_PRIMVERTS );
 			}
+#endif
 		}
 	}
 
@@ -1699,10 +1711,15 @@ static void SubdivideFaceBySubdivSize( face_t *f, float subdivsize )
 		g_primindices[newPrim.firstIndex + newPrim.indexCount] = pStripIndices[i];
 		newPrim.indexCount++;
 		g_numprimindices++;
+#if defined( GAME_NPF )
+		if ( g_numprimindices >= g_primindices.Count() )
+			g_primindices.AddMultipleToTail( MAX_MAP_PRIMINDICES );
+#else
 		if( g_numprimindices > MAX_MAP_PRIMINDICES )
 		{
 			Error( "Exceeded max water indicies.\nIncrease surface subdivision size! (%d>%d)\n", g_numprimindices, MAX_MAP_PRIMINDICES );
 		}
+#endif
 	}
 	delete [] pStripIndices;
 #else
@@ -1718,10 +1735,15 @@ static void SubdivideFaceBySubdivSize( face_t *f, float subdivsize )
 	}
 #endif
 	g_numprimitives++; // don't increment until we get here and are sure that we have a primitive.
+#if defined( GAME_NPF )
+	if ( g_numprimitives >= g_primitives.Count() )
+		g_primitives.AddMultipleToTail( MAX_MAP_PRIMITIVES );
+#else
 	if( g_numprimitives > MAX_MAP_PRIMITIVES )
 	{
 		Error( "Exceeded max water primitives.\nIncrease surface subdivision size! (%d>%d)\n", ( int )g_numprimitives, ( int )MAX_MAP_PRIMITIVES );
 	}
+#endif
 }
 
 void SubdivideFaceBySubdivSize( face_t *f )

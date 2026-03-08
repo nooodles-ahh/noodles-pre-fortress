@@ -19,8 +19,11 @@
 #include "threads.h"
 #include "pacifier.h"
 
+#if defined( GAME_NPF )
+#define	MAX_THREADS	32
+#else
 #define	MAX_THREADS	16
-
+#endif
 
 class CRunThreadsData
 {

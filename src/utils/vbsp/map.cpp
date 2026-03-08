@@ -3053,10 +3053,12 @@ ChunkFileResult_t CMapFile::LoadSolidCallback(CChunkFile *pFile, LoadEntity_t *p
 					g_ClipTexinfo = b->original_sides[0].texinfo;
 				}
 				c_clipbrushes++;
+#if !defined( GAME_NPF )
 				for (int i=0 ; i<b->numsides ; i++)
 				{
 					b->original_sides[i].texinfo = TEXINFO_NODE;
 				}
+#endif
 			}
 		}
 

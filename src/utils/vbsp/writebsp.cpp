@@ -1141,6 +1141,12 @@ void BeginBSPFile (void)
 	numleafs = 1;
 	dleafs[0].contents = CONTENTS_SOLID;
 
+#if defined( GAME_NPF )
+	g_primitives.AddMultipleToTail( MAX_MAP_PRIMITIVES );
+	g_primverts.AddMultipleToTail( MAX_MAP_PRIMVERTS );
+	g_primindices.AddMultipleToTail( MAX_MAP_PRIMINDICES );
+#endif
+
 	// BUGBUG: This doesn't work!
 #if 0
 	// make a default empty leaf for the tracing code

@@ -59,6 +59,23 @@ void InitMaterialSystem( const char *materialBaseDirPath, CreateInterfaceFn file
 	LoadMaterialSystemInterface( fileSystemFactory );
 	MaterialSystem_Config_t config;
 	g_pMaterialSystem->OverrideConfig( config, false );
+
+#if defined( GAME_NPF )
+	// HACK!!! if we don't have a game or vproject argument and we've made it this far,
+	// it means we're using the VPROJECT env variable, which ModInit does not check.
+	if ( !CommandLine()->FindParm( "-game" ) && !CommandLine()->FindParm( "-vproject" ) )
+	{
+		const char *pProject = nullptr;
+		if ( ( pProject = getenv( GAMEDIR_TOKEN ) ) != nullptr )
+		{
+			char projectPath[MAX_PATH];
+			V_MakeAbsolutePath( projectPath, MAX_PATH, pProject );
+			CommandLine()->AppendParm( "-game", projectPath );
+		}
+	}
+	// init mod shaders
+	g_pMaterialSystem->ModInit();
+#endif
 }
 
 void ShutdownMaterialSystem( )

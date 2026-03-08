@@ -42,6 +42,11 @@
 #include "xbox/xbox_win32stubs.h"
 #endif
 
+#if defined(APPID_MOUNTING)
+#define VERSION_SAFE_STEAM_API_INTERFACES
+#include <steam/steam_api.h>
+#endif
+
 #include "tier0/memdbgon.h"
 
 // set these before calling CheckParm
@@ -594,6 +599,12 @@ void Q_mkdir (char *path)
 
 void CmdLib_InitFileSystem( const char *pFilename, int maxMemoryUsage )
 {
+#if defined(APPID_MOUNTING)
+	// TODO auto create steam_appid.txt
+	if ( !SteamAPI_InitSafe() )
+		Warning( "WARNING: Steam API is not initialized! Remember to use -steam\n" );
+#endif
+
 	FileSystem_Init( pFilename, maxMemoryUsage );
 	if ( !g_pFileSystem )
 		Error( "CmdLib_InitFileSystem failed." );

@@ -1977,10 +1977,48 @@ void GatherSampleStandardLightSSE( SSE_sampleLightOutput_t &out, directlight_t *
 	}
 
 	// Raytrace for visibility function
+#if defined( GAME_NPF )
+	// I'm encountering an issue where black dots and lines keep appearing in
+	// shadows cast by textures. The problem actually lies in raytrace but SIMD
+	// is a bit beyond me. If I instead do 4 single traces it looks fine. So
+	// that's what this does.
+	FourRays myrays;
+	myrays.origin = pos;
+	myrays.direction = src;
+	myrays.direction -= myrays.origin;
+	fltx4 len = myrays.direction.length();
+	myrays.direction *= ReciprocalSIMD( len );
+	int msk = myrays.CalculateDirectionSignMask();
+	if ( !g_bTextureShadows && msk != -1 )
+	{
+		fltx4 fractionVisible = Four_Ones;
+		TestLine( pos, src, &fractionVisible, static_prop_index_to_ignore );
+		dot = MulSIMD( fractionVisible, dot );
+		out.m_flDot[0] = dot;
+	}
+	else
+	{
+		for ( int l = 0; l < 4; ++l )
+		{
+			FourVectors fvPos;
+			FourVectors fvSrc;
+			fltx4 fxDot;
+			fvPos.DuplicateVector( pos.Vec( l ) );
+			fvSrc.DuplicateVector( src.Vec( l ) );
+			fxDot = ReplicateX4( dot.m128_f32[0] );
+
+			fltx4 fractionVisible = Four_Ones;
+			TestLine( fvPos, fvSrc, &fractionVisible, static_prop_index_to_ignore );
+			fxDot = MulSIMD( fractionVisible, fxDot );
+			out.m_flDot[0].m128_f32[l] = fxDot.m128_f32[0];
+		}
+	}
+#else
 	fltx4 fractionVisible = Four_Ones;
-	TestLine( pos, src, &fractionVisible, static_prop_index_to_ignore);
+	TestLine( pos, src, &fractionVisible, static_prop_index_to_ignore );
 	dot = MulSIMD( fractionVisible, dot );
 	out.m_flDot[0] = dot;
+#endif
 
 	for ( int i = 1; i < normalCount; i++ )
 	{
@@ -1993,6 +2031,64 @@ void GatherSampleStandardLightSSE( SSE_sampleLightOutput_t &out, directlight_t *
 		}
 	}
 }
+
+#if defined( GAME_NPF )
+// https://holger.dammertz.org/stuff/notes_HammersleyOnHemisphere.html
+float RadicalInverse( uint bits )
+{
+	bits = ( bits << 16u ) | ( bits >> 16u );
+	bits = ( ( bits & 0x55555555u ) << 1u ) | ( ( bits & 0xAAAAAAAAu ) >> 1u );
+	bits = ( ( bits & 0x33333333u ) << 2u ) | ( ( bits & 0xCCCCCCCCu ) >> 2u );
+	bits = ( ( bits & 0x0F0F0F0Fu ) << 4u ) | ( ( bits & 0xF0F0F0F0u ) >> 4u );
+	bits = ( ( bits & 0x00FF00FFu ) << 8u ) | ( ( bits & 0xFF00FF00u ) >> 8u );
+	return float( bits ) * 2.3283064365386963e-10; // / 0x100000000
+}
+
+Vector HemisphereSampleUniform( int i, int N )
+{
+	// Hammersley points
+	float u = float( i ) / float( N );
+	float v = RadicalInverse( i );
+
+	float phi = v * 2.0 * M_PI;
+	float cosTheta = 1.0 - u;
+	float sinTheta = sqrt( 1.0 - cosTheta * cosTheta );
+	return Vector( cos( phi ) * sinTheta, sin( phi ) * sinTheta, cosTheta );
+}
+
+fltx4 GatherSampleOcclusion( int facenum, FourVectors const &pos, FourVectors *pNormals,
+							 int static_prop_index_to_ignore )
+{
+	fltx4 accumulatedOcclusion = Four_Zeros;
+	for ( int i = 0; i < g_aoSamples; ++i )
+	{
+		Vector vecDir = HemisphereSampleUniform( i, g_aoSamples );
+		fltx4 dot = ( *pNormals ) * vecDir;
+
+		// negate any point lying behind the normal
+		Vector adjustedDirs[4];
+		for ( int j = 0; j < 4; ++j )
+		{
+			adjustedDirs[j] = vecDir;
+			if ( dot.m128_f32[j] < 0.0f )
+				adjustedDirs[j].Negate();
+		}
+
+		FourVectors endPos = FourVectors( adjustedDirs[0], adjustedDirs[1], adjustedDirs[2], adjustedDirs[3] );
+		endPos *= g_aoRadius;
+		endPos += pos; // offset vectors to actual sample position
+
+		fltx4 fractionVisible = Four_Ones;
+		// OR sky so we skip it as otherwise sky brushes will produce AO
+		TestLine( pos, endPos, &fractionVisible, TRACE_ID_SKY | static_prop_index_to_ignore );
+
+		accumulatedOcclusion = AddSIMD( accumulatedOcclusion, fractionVisible );
+	}
+
+	// divide the result by number of samples
+	return DivSIMD( accumulatedOcclusion, ReplicateX4( g_aoSamples ) );
+}
+#endif
 
 // returns dot product with normal and delta
 // dl - light
@@ -2040,10 +2136,26 @@ void GatherSampleLightSSE( SSE_sampleLightOutput_t &out, directlight_t *dl, int 
 	// in disturbing ways if we don't do this.
 	out.m_flDot[0] = MaxSIMD ( out.m_flDot[0], Four_Zeros );
 	fltx4 notZero = CmpGtSIMD( out.m_flDot[0], Four_Zeros );
+#if defined( GAME_NPF )
+	fltx4 aoSample = Four_Ones;
+	// do AO, but skip directional if desired
+	if ( g_aoEnabled && ( !g_aoAmbientOnly || dl->light.type == emit_skyambient ) &&
+		 ( !g_aoNoDirectional || dl->light.type != emit_skylight ) )
+	{
+		aoSample = GatherSampleOcclusion( facenum, pos, pNormals, static_prop_index_to_ignore );
+		out.m_flDot[0] = MulSIMD( out.m_flDot[0], aoSample );
+		out.m_flFalloff = MulSIMD( out.m_flFalloff, aoSample );
+	}
+#endif
+
 	for ( int n = 1; n < normalCount; n++ )
 	{
 		out.m_flDot[n] = MaxSIMD( out.m_flDot[n], Four_Zeros );
 		out.m_flDot[n] = AndSIMD( out.m_flDot[n], notZero );
+#if defined( GAME_NPF )
+		// if ( g_aoEnabled )
+			out.m_flDot[n] = MulSIMD( out.m_flDot[n], aoSample );
+#endif
 	}
 
 }

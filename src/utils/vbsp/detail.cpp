@@ -440,6 +440,10 @@ face_t *MakeBrushFace( side_t *originalSide, winding_t *winding )
 	f->split[0] = f->split[1] = NULL;
 	f->w = CopyWinding( winding );
 	f->originalface = originalSide;
+#if defined( GAME_NPF )
+	f->smoothingGroups = originalSide->smoothingGroups;
+#endif
+
 	//
 	// save material info
 	//

@@ -15,7 +15,7 @@ $Configuration
 	{
 		$AdditionalIncludeDirectories		"$BASE,..\common,..\vmpi,..\vmpi\mysql\mysqlpp\include,..\vmpi\mysql\include"
 		$PreprocessorDefinitions			"$BASE;MPI" [$WIN32]
-		$PreprocessorDefinitions			"$BASE;PROTECTED_THINGS_DISABLE;VRAD"
+		$PreprocessorDefinitions			"$BASE;PROTECTED_THINGS_DISABLE;VRAD;APPID_MOUNTING"
 	}
 
 	$Linker
@@ -224,6 +224,8 @@ $Project "VRAD"
 		$Lib vtf
 		$Lib "$LIBCOMMON/lzma"
 		$File "$SRCDIR\thirdparty\libcurl\lib\win32\libcurl.lib" [$WIN32]
+		$ImpLibexternal steam_api	[!$WIN64]
+		$ImpLibexternal steam_api64	[$WIN64]
 	}
 
 	$File	"notes.txt"

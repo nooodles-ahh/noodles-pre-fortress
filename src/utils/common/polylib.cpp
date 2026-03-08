@@ -42,6 +42,14 @@ winding_t *AllocWinding (int points)
 {
 	winding_t	*w;
 
+#if defined( GAME_NPF )
+	w = (winding_t *)malloc( sizeof( winding_t ) );
+	w->p = (Vector *)calloc( points, sizeof( Vector ) );
+	w->numpoints = 0;
+	w->maxpoints = points;
+	w->next = NULL;
+	return w;
+#else
 	if (numthreads == 1)
 	{
 		c_winding_allocs++;
@@ -66,10 +74,15 @@ winding_t *AllocWinding (int points)
 	w->maxpoints = points;
 	w->next = NULL;
 	return w;
+#endif
 }
 
 void FreeWinding (winding_t *w)
 {
+#if defined( GAME_NPF )
+	free( w->p );
+	free( w );
+#else
 	if (w->numpoints == 0xdeaddead)
 		Error ("FreeWinding: freed a freed winding");
 	
@@ -78,6 +91,7 @@ void FreeWinding (winding_t *w)
 	w->next = winding_pool[w->maxpoints];
 	winding_pool[w->maxpoints] = w;
 	ThreadUnlock();
+#endif
 }
 
 /*

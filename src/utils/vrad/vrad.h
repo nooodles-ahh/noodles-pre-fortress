@@ -291,6 +291,16 @@ extern bool g_bTextureShadows;
 extern bool g_bShowStaticPropNormals;
 extern bool g_bDisablePropSelfShadowing;
 
+#if defined( GAME_NPF )
+extern bool g_aoEnabled;
+extern int g_aoSamples;
+extern float g_aoRadius;
+extern bool g_aoNoDirectional;
+extern bool g_aoAmbientOnly;
+extern bool g_bWorldTextureShadows;
+extern bool g_bPropTextureShadows;
+#endif
+
 extern CUtlVector<char const *> g_NonShadowCastingMaterialStrings;
 extern void ForceTextureShadowsOnModel( const char *pModelName );
 extern bool IsModelTextureShadowsForced( const char *pModelName );
@@ -337,7 +347,7 @@ extern dface_t *g_pFaces;
 extern bool g_bMPIProps;
 
 extern	byte	nodehit[MAX_MAP_NODES];
-extern  float	gamma;
+extern  float	gamma_value;
 extern	float	indirect_sun;
 extern	float	smoothing_threshold;
 extern	int		dlight_map;

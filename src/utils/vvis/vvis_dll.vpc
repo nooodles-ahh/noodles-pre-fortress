@@ -15,7 +15,7 @@ $Configuration
 	{
 		$AdditionalIncludeDirectories		"$BASE,..\common,..\vmpi,..\vmpi\mysql\include"
 		$PreprocessorDefinitions			"$BASE;MPI" [$WIN32]
-		$PreprocessorDefinitions			"$BASE;PROTECTED_THINGS_DISABLE"
+		$PreprocessorDefinitions			"$BASE;PROTECTED_THINGS_DISABLE;APPID_MOUNTING"
 	}
 
 	$Linker
@@ -102,5 +102,7 @@ $Project "VVIS"
 		$Lib vmpi [$WIN32]
 		$Lib "$LIBCOMMON/lzma"
 		$File "$SRCDIR\thirdparty\libcurl\lib\win32\libcurl.lib" [$WIN32]
+		$ImpLibexternal steam_api	[!$WIN64]
+		$ImpLibexternal steam_api64	[$WIN64]
 	}
 }

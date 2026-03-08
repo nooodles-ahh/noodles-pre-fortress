@@ -170,6 +170,9 @@ extern float			g_luxelScale;
 extern float			g_minLuxelScale;
 extern bool				g_BumpAll;
 extern int				g_nDXLevel;
+#if defined( GAME_NPF )
+extern int				g_evilWaterLeafLimit;
+#endif
 
 int GetDispInfoEntityNum( mapdispinfo_t *pDisp );
 void ComputeBoundsNoSkybox( );

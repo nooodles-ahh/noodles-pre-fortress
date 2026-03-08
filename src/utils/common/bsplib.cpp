@@ -541,6 +541,9 @@ const char *GetLumpName( unsigned int lumpnum )
 // "-hdr" tells us to use the HDR fields (if present) on the light sources.  Also, tells us to write
 // out the HDR lumps for lightmaps, ambient leaves, and lights sources.
 bool g_bHDR = false;
+#if defined( GAME_NPF )
+bool g_remapLightingLumps = false;
+#endif
 
 // Set to true to generate Xbox360 native output files
 static bool g_bSwapOnLoad = false;
@@ -618,13 +621,25 @@ int         numorigfaces;
 dface_t     dorigfaces[MAX_MAP_FACES];
 
 int				g_numprimitives = 0;
+#if defined( GAME_NPF )
+CUtlVector<dprimitive_t> g_primitives;
+#else
 dprimitive_t	g_primitives[MAX_MAP_PRIMITIVES];
+#endif
 
 int				g_numprimverts = 0;
+#if defined( GAME_NPF )
+CUtlVector<dprimvert_t> g_primverts;
+#else
 dprimvert_t		g_primverts[MAX_MAP_PRIMVERTS];
+#endif
 
 int				g_numprimindices = 0;
+#if defined( GAME_NPF )
+CUtlVector<unsigned short> g_primindices;
+#else
 unsigned short	g_primindices[MAX_MAP_PRIMINDICES];
+#endif
 
 int			numfaces;
 dface_t		dfaces[MAX_MAP_FACES];
@@ -1306,6 +1321,9 @@ static void AddGameLumps( )
 
 	// write dictionary
 	dgamelump_t dict;
+#if defined( GAME_NPF )
+	CUtlVector<dgamelump_t> vecLumpDict;
+#endif
 	int offset = lump->fileofs + sizeof(header) + clumpCount * sizeof(dgamelump_t);
 	GameLumpHandle_t h;
 	for( h = g_GameLumps.FirstGameLump(); h != g_GameLumps.InvalidGameLump(); h = g_GameLumps.NextGameLump( h ) )
@@ -1317,12 +1335,60 @@ static void AddGameLumps( )
 		dict.filelen = g_GameLumps.GameLumpSize( h );
 		offset += dict.filelen;
 
+#if defined( GAME_NPF )
+		vecLumpDict.AddToTail( dict );
+#else
 		WriteData( &dict );
+#endif
 	}
+
+#if defined( GAME_NPF )
+	const GameLumpId_t idTarget = g_bHDR ? GAMELUMP_DETAIL_PROP_LIGHTING : GAMELUMP_DETAIL_PROP_LIGHTING_HDR;
+	if ( g_remapLightingLumps )
+	{
+		// redirect target to point to source
+		const GameLumpId_t idSource = g_bHDR ? GAMELUMP_DETAIL_PROP_LIGHTING_HDR : GAMELUMP_DETAIL_PROP_LIGHTING;
+		dgamelump_t *lumpTarget = nullptr;
+		dgamelump_t *lumpSource = nullptr;
+
+		// recal offsets
+		int offset = lump->fileofs + sizeof( header ) + clumpCount * sizeof( dgamelump_t );
+		for ( int i = 0; i < vecLumpDict.Count(); ++i )
+		{
+			dgamelump_t *pDict = &vecLumpDict[i];
+			if ( pDict->id == idTarget )
+			{
+				lumpTarget = pDict;
+				continue; // skip as we update it last
+			}
+			else if(pDict->id == idSource)
+			{
+				lumpSource = pDict;
+			}
+
+			pDict->fileofs = offset;
+			offset += pDict->filelen;
+		}
+
+		if ( lumpTarget && lumpSource )
+		{
+			lumpTarget->filelen = lumpSource->filelen;
+			lumpTarget->fileofs = lumpSource->fileofs;
+		}
+	}
+
+	for ( dgamelump_t dict : vecLumpDict )
+		WriteData( &dict );
+#endif
 
 	// write lumps..
 	for( h = g_GameLumps.FirstGameLump(); h != g_GameLumps.InvalidGameLump(); h = g_GameLumps.NextGameLump( h ) )
 	{
+#if defined( GAME_NPF )
+		if ( g_remapLightingLumps && idTarget == g_GameLumps.GetGameLumpId( h ) )
+			continue;
+#endif
+
 		unsigned int lumpsize = g_GameLumps.GameLumpSize(h);
 		if ( g_bSwapOnWrite )
 		{
@@ -2187,7 +2253,6 @@ void OpenBSPFile( const char *filename )
 
 	// load the file header
 	LoadFile( filename, (void **)&g_pBSPHeader );
-
 	if ( g_bSwapOnLoad )
 	{
 		g_Swap.ActivateByteSwapping( true );
@@ -2238,9 +2303,19 @@ void LoadBSPFile( const char *filename )
 	CopyOptionalLump( LUMP_FACEIDS, dfaceids );
 
 
+#if defined( GAME_NPF )
+	CopyLump( LUMP_PRIMITIVES, g_primitives );
+	CopyLump( LUMP_PRIMVERTS, g_primverts );
+	CopyLump( FIELD_SHORT, LUMP_PRIMINDICES, g_primindices );
+
+	g_numprimitives = g_primitives.Count();
+	g_numprimverts = g_primverts.Count();
+	g_numprimindices = g_primindices.Count();
+#else
 	g_numprimitives = CopyLump( LUMP_PRIMITIVES, g_primitives );
 	g_numprimverts = CopyLump( LUMP_PRIMVERTS, g_primverts );
 	g_numprimindices = CopyLump( FIELD_SHORT, LUMP_PRIMINDICES, g_primindices );
+#endif
     numorigfaces = CopyLump( LUMP_ORIGINALFACES, dorigfaces );   // original faces
 	numleaffaces = CopyLump( FIELD_SHORT, LUMP_LEAFFACES, dleaffaces );
 	numleafbrushes = CopyLump( FIELD_SHORT, LUMP_LEAFBRUSHES, dleafbrushes );
@@ -2563,6 +2638,20 @@ static void AddLumpInternal( int lumpnum, void *data, int len, int version )
 	AlignFilePosition( g_hBSPFile, 4 );
 }
 
+#if defined( GAME_NPF )
+// update a lump to point to an existing lump
+void RedirectLump( int lumpnum, int lumpnumOther )
+{
+	lump_t *lumpOther;
+	lump_t *lump;
+	g_Lumps.size[lumpnum] = 0;
+	lump = &g_pBSPHeader->lumps[lumpnum];
+	lumpOther = &g_pBSPHeader->lumps[lumpnumOther];
+
+	V_memcpy( lump, lumpOther, sizeof(lump_t) );
+}
+#endif
+
 template< class T >
 static void SwapInPlace( T *pData, int count )
 {
@@ -2621,6 +2710,34 @@ static void AddLump( int lumpnum, CUtlVector<T> &data, int version )
 	AddLumpInternal( lumpnum, data.Base(), data.Count() * sizeof(T), version );
 }
 
+#if defined( GAME_NPF )
+void HandleLumpRemapping()
+{
+	if ( !g_remapLightingLumps )
+		return;
+
+	// do the opposite of whatever we just built
+	if(g_bHDR)
+	{
+		RedirectLump( LUMP_LEAF_AMBIENT_LIGHTING, LUMP_LEAF_AMBIENT_LIGHTING_HDR );
+		RedirectLump( LUMP_LEAF_AMBIENT_INDEX, LUMP_LEAF_AMBIENT_INDEX_HDR );
+		RedirectLump( LUMP_LIGHTING, LUMP_LIGHTING_HDR );
+		RedirectLump( LUMP_WORLDLIGHTS, LUMP_WORLDLIGHTS_HDR );
+		RedirectLump( LUMP_FACES, LUMP_FACES_HDR );
+
+
+	}
+	else
+	{
+		RedirectLump( LUMP_LEAF_AMBIENT_LIGHTING_HDR, LUMP_LEAF_AMBIENT_LIGHTING );
+		RedirectLump( LUMP_LEAF_AMBIENT_INDEX_HDR, LUMP_LEAF_AMBIENT_INDEX );
+		RedirectLump( LUMP_LIGHTING_HDR, LUMP_LIGHTING );
+		RedirectLump( LUMP_WORLDLIGHTS_HDR, LUMP_WORLDLIGHTS );
+		RedirectLump( LUMP_FACES_HDR, LUMP_FACES );
+	}
+}
+#endif
+
 /*
 =============
 WriteBSPFile
@@ -2665,9 +2782,15 @@ void WriteBSPFile( const char *filename, char *pUnused )
     AddLump( LUMP_DISP_LIGHTMAP_SAMPLE_POSITIONS, g_DispLightmapSamplePositions );
 	AddLump( LUMP_FACE_MACRO_TEXTURE_INFO, g_FaceMacroTextureInfos );
  
+#if defined( GAME_NPF )
+	AddLump( LUMP_PRIMITIVES, g_primitives.Base(), g_numprimitives );
+	AddLump( LUMP_PRIMVERTS, g_primverts.Base(), g_numprimverts );
+	AddLump( LUMP_PRIMINDICES, g_primindices.Base(), g_numprimindices );
+#else
 	AddLump( LUMP_PRIMITIVES, g_primitives, g_numprimitives );
 	AddLump( LUMP_PRIMVERTS, g_primverts, g_numprimverts );
 	AddLump( LUMP_PRIMINDICES, g_primindices, g_numprimindices );
+#endif
     AddLump( LUMP_FACES, dfaces, numfaces, LUMP_FACES_VERSION );
     if (numfaces_hdr)
 		AddLump( LUMP_FACES_HDR, dfaces_hdr, numfaces_hdr, LUMP_FACES_VERSION );
@@ -2730,6 +2853,10 @@ void WriteBSPFile( const char *filename, char *pUnused )
 	AddLump( LUMP_VERTNORMALINDICES, g_vertnormalindices, g_numvertnormalindices );
 
 	AddLump( LUMP_LEAFMINDISTTOWATER, g_LeafMinDistToWater, numleafs );
+
+#if defined( GAME_NPF )
+	HandleLumpRemapping();
+#endif
 
 	AddGameLumps();
 
@@ -2910,9 +3037,15 @@ void PrintBSPFileSizes (void)
 	totalmemory += ArrayUsage( "HDR worldlights",	numworldlightsHDR,	ENTRIES(dworldlightsHDR),	ENTRYSIZE(dworldlightsHDR) );
 
 	totalmemory += ArrayUsage( "leafwaterdata",	numleafwaterdata,ENTRIES(dleafwaterdata),	ENTRYSIZE(dleafwaterdata) );
+#if defined( GAME_NPF )
+	totalmemory += ArrayUsage( "waterstrips",	g_numprimitives, g_primitives.Count(),	 sizeof(dprimitive_t) );
+	totalmemory += ArrayUsage( "waterverts",	g_numprimverts,	 g_primverts.Count(),	 sizeof(dprimvert_t) );
+	totalmemory += ArrayUsage( "waterindices",	g_numprimindices, g_primindices.Count(), sizeof(unsigned short) );
+#else
 	totalmemory += ArrayUsage( "waterstrips",	g_numprimitives,ENTRIES(g_primitives),	ENTRYSIZE(g_primitives) );
 	totalmemory += ArrayUsage( "waterverts",	g_numprimverts,	ENTRIES(g_primverts),	ENTRYSIZE(g_primverts) );
 	totalmemory += ArrayUsage( "waterindices",	g_numprimindices,ENTRIES(g_primindices),ENTRYSIZE(g_primindices) );
+#endif
 	totalmemory += ArrayUsage( "cubemapsamples", g_nCubemapSamples,ENTRIES(g_CubemapSamples),ENTRYSIZE(g_CubemapSamples) );
 	totalmemory += ArrayUsage( "overlays",      g_nOverlayCount, ENTRIES(g_Overlays),   ENTRYSIZE(g_Overlays) );
 	

@@ -18,7 +18,11 @@
 
 // Arrays that are indexed by thread should always be MAX_TOOL_THREADS+1
 // large so THREADINDEX_MAIN can be used from the main thread.
+#if defined( GAME_NPF )
+#define MAX_TOOL_THREADS	32
+#else
 #define MAX_TOOL_THREADS	16
+#endif
 #define THREADINDEX_MAIN	(MAX_TOOL_THREADS)
 
 

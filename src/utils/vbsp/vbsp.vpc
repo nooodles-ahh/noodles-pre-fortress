@@ -14,7 +14,7 @@ $Configuration
 	$Compiler
 	{
 		$AdditionalIncludeDirectories		"$BASE,..\common,..\vmpi"
-		$PreprocessorDefinitions			"$BASE;MACRO_MATHLIB;PROTECTED_THINGS_DISABLE"
+		$PreprocessorDefinitions			"$BASE;MACRO_MATHLIB;PROTECTED_THINGS_DISABLE;APPID_MOUNTING"
 	}
 
 	$Linker
@@ -180,6 +180,8 @@ $Project "VBSP"
 		$Lib tier2
 		$Lib vtf
 		$Lib "$LIBCOMMON/lzma"
+		$ImpLibexternal steam_api	[!$WIN64]
+		$ImpLibexternal steam_api64	[$WIN64]
 	}
 
 	$File	"notes.txt"

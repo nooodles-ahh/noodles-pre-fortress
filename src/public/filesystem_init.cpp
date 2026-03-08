@@ -681,13 +681,50 @@ FSReturnCode_t FileSystem_LoadSearchPaths( CFSSearchPathsInit &initInfo )
 		}
 	}
 
+
+#if defined(APPID_MOUNTING)
+	// if we don't have steam loaded we still want to find our video games
+	KeyValuesAD kvLibraryFolders( "libraryfolders" );
+	if ( !SteamApps() )
+	{
+		// warn about having no steamapps connection but make best guess
+		Warning( "No SteamApps connection. Making best attempt to locate app paths" );
+
+		char szSteamPath[MAX_PATH] = { 0 };
+#if defined( _WINDOWS )
+		// Check the registry 
+		HKEY key;
+		DWORD steamPathSize = sizeof( szSteamPath );
+
+		if ( RegOpenKeyEx( HKEY_CURRENT_USER, "SOFTWARE\\Valve\\Steam", 0, KEY_READ, &key ) != ERROR_SUCCESS )
+		{
+			Error( "Steam not installed?" );
+		}
+
+		if ( RegQueryValueEx( key, "SteamPath", nullptr, nullptr, (LPBYTE) szSteamPath, &steamPathSize ) != ERROR_SUCCESS )
+		{
+			Error( "Steam not installed?" );
+		}
+#else
+		// TODO linux
+#endif
+
+		// construct a path to libraryfolders.vdf
+		char szLibraryFolderPath[MAX_PATH * 2];
+		V_sprintf_safe( szLibraryFolderPath, "%s\\SteamApps\\libraryfolders.vdf", szSteamPath );
+		V_FixSlashes( szLibraryFolderPath );
+
+		kvLibraryFolders->LoadFromFile( initInfo.m_pFileSystem, szLibraryFolderPath );
+	}
+#endif
+
 	bool bLowViolence = initInfo.m_bLowViolence;
 	for ( KeyValues *pCur=pSearchPaths->GetFirstValue(); pCur; pCur=pCur->GetNextValue() )
 	{
 		const char *pszPathID = pCur->GetName();
 		const char *pLocation = pCur->GetString();
 		const char *pszBaseDir = baseDir;
-#ifdef ENGINE_DLL
+#if defined(ENGINE_DLL) || defined(APPID_MOUNTING)
 		char szAppInstallDir[ 1024 ];
 #endif
 
@@ -696,7 +733,7 @@ FSReturnCode_t FileSystem_LoadSearchPaths( CFSSearchPathsInit &initInfo )
 
 		if ( Q_stristr( pLocation, APPID_PREFIX_TOKEN ) == pLocation )
 		{
-#ifdef ENGINE_DLL
+#if defined(ENGINE_DLL) || defined(APPID_MOUNTING)
 			pLocation += strlen( APPID_PREFIX_TOKEN );
 			const char *pNumberLoc = pLocation;
 			int nAppId = V_atoi( pNumberLoc );
@@ -714,13 +751,65 @@ FSReturnCode_t FileSystem_LoadSearchPaths( CFSSearchPathsInit &initInfo )
 
 			if ( !SteamApps() )
 			{
+#if !defined(APPID_MOUNTING)
 				Error( "No SteamApps connection." );
+#endif
 			}
 
 			const Source1AppidInfo_t *pKnownAppid = GetKnownAppidInfo( nAppId );
 
 			const char *pszAppName = pKnownAppid ? pKnownAppid->pszName : "Unknown";
 
+#if defined(APPID_MOUNTING)
+			if ( !SteamApps() )
+			{
+				int appid = -1;
+				char szSteamLibraryPath[1024];
+				szSteamLibraryPath[0] = '\0';
+
+				// attempt to locate our game
+				FOR_EACH_SUBKEY( kvLibraryFolders, kvLibrary )
+				{
+					KeyValues *kvApps = kvLibrary->FindKey( "apps" );
+					if ( kvApps )
+					{
+						FOR_EACH_SUBKEY( kvApps, kvApp )
+						{
+							appid = V_atoi( kvApp->GetName() );
+							if ( appid == nAppId )
+							{
+								V_sprintf_safe( szSteamLibraryPath, "%s", kvLibrary->GetString( "path", "" ) );
+								V_FixDoubleSlashes( szSteamLibraryPath );
+								break;
+							}
+						}
+
+						if ( szSteamLibraryPath[0] != '\0' )
+							break;
+					}
+				}
+
+				// did we find something?
+				if ( szSteamLibraryPath[0] != '\0' )
+				{
+					// ok well know find our fucking appmanifest
+					char szManifestPath[1024];
+					V_sprintf_safe( szManifestPath, "%s\\steamapps\\appmanifest_%d.acf", szSteamLibraryPath, appid );
+					KeyValuesAD kvAppManifest( "AppState" );
+					if ( kvAppManifest->LoadFromFile( initInfo.m_pFileSystem, szManifestPath ) )
+					{
+						const char *pszInstallDir = kvAppManifest->GetString( "installdir", nullptr );
+						if ( pszInstallDir )
+						{
+							// finally we can construct this nightmare 
+							V_sprintf_safe( szAppInstallDir, "%s\\steamapps\\common\\%s", szSteamLibraryPath, pszInstallDir );
+						}
+					}
+				}
+			}
+			else
+			{
+#endif
 			if ( !SteamApps()->BIsSubscribedApp( nAppId ) )
 			{
 				char szStoreCommand[4096];
@@ -744,6 +833,10 @@ FSReturnCode_t FileSystem_LoadSearchPaths( CFSSearchPathsInit &initInfo )
 			{
 				Error( "Couldn't get install dir for appid: %d", nAppId );
 			}
+#if defined(APPID_MOUNTING)
+			}
+#endif
+
 			pszBaseDir = szAppInstallDir;
 #else
 			Error( "Appid based mounting is not supported on non-engine DLL projects." );

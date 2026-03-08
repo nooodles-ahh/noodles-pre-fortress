@@ -74,3 +74,14 @@ $Group "dedicated"
 	"tier1"
 }
 
+$Group "maptools"
+{
+	"bsppack"
+	"bspzip"
+	"fgdlib"
+	"vbsp"
+	"vrad_dll"
+	"vrad_launcher"
+	"vvis_dll"
+	"vvis_launcher"
+}
