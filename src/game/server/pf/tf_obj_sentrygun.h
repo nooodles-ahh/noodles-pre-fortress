@@ -71,6 +71,7 @@ public:
 
 	// Hauling related.
 	virtual void	MakeCarriedObject( CTFPlayer *pCarrier );
+	virtual void	DismantleObject( CTFPlayer *pPlayer );
 
 protected:
 

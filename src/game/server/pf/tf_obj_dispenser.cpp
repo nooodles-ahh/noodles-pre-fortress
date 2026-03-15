@@ -496,6 +496,25 @@ void CObjectDispenser::DetonateObject( void )
 }
 
 //-----------------------------------------------------------------------------
+// Purpose: Destroy building and give builder metal invested + amount stored
+//-----------------------------------------------------------------------------
+void CObjectDispenser::DismantleObject( CTFPlayer *pPlayer )
+{
+	pPlayer->SetAllowAmmoOverdraw( true );
+
+	int iMetal = m_iAmmoMetal;
+	iMetal += m_iUpgradeMetal;
+	iMetal += GetObjectInfo( ObjectType() )->m_Cost;
+	iMetal += ( m_iUpgradeLevel - 1 ) * m_iUpgradeMetalRequired;
+	iMetal *= pf_building_dismantle_factor.GetFloat();
+
+	int iMetalGiven = pPlayer->GiveAmmo( iMetal, TF_AMMO_METAL, false );
+
+	pPlayer->SetAllowAmmoOverdraw( false );
+	BaseClass::DismantleObject( pPlayer );
+}
+
+//-----------------------------------------------------------------------------
 // Handle commands sent from vgui panels on the client 
 //-----------------------------------------------------------------------------
 bool CObjectDispenser::ClientCommand( CTFPlayer *pPlayer, const CCommand &args )

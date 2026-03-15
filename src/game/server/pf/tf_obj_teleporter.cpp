@@ -1154,3 +1154,21 @@ void CObjectTeleporter::DetonateObject(void)
 
 	BaseClass::DetonateObject();
 }
+
+//-----------------------------------------------------------------------------
+// Purpose: Destroy building and give builder metal invested
+//-----------------------------------------------------------------------------
+void CObjectTeleporter::DismantleObject( CTFPlayer *pPlayer )
+{
+	pPlayer->SetAllowAmmoOverdraw( true );
+
+	int iMetal = m_iUpgradeMetal;
+	iMetal += GetObjectInfo( ObjectType() )->m_Cost;
+	iMetal += ( m_iUpgradeLevel - 1 ) * m_iUpgradeMetalRequired;
+	iMetal *= pf_building_dismantle_factor.GetFloat();
+
+	int iMetalGiven = pPlayer->GiveAmmo( iMetal, TF_AMMO_METAL, false );
+
+	pPlayer->SetAllowAmmoOverdraw( false );
+	BaseClass::DismantleObject( pPlayer );
+}

@@ -37,7 +37,8 @@ ConVar pf_healthkit_armor_repair( "pf_healthkit_armor_repair", "-1", FCVAR_GAMED
 ConVar pf_delayed_knife( "pf_delayed_knife", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_SERVER_CAN_EXECUTE, "Toggles the old delayed knife backstab" );
 ConVar pf_allow_special_class( "pf_allow_special_class", "0", FCVAR_REPLICATED | FCVAR_SERVER_CAN_EXECUTE | FCVAR_NOTIFY, "Enables the civilian class in non-escort gamemodes." );
 ConVar pf_grenades_holstering("pf_grenades_holstering", "1", FCVAR_NOTIFY | FCVAR_REPLICATED);
-ConVar pf_haul_buildings("pf_haul_buildings", "1", FCVAR_NOTIFY | FCVAR_REPLICATED, "Allow Engineers to haul buildings.");
+ConVar pf_haul_buildings( "pf_haul_buildings", "0", FCVAR_NOTIFY | FCVAR_REPLICATED, "Allow Engineers to haul buildings." );
+ConVar pf_dismantle_buildings( "pf_dismantle_buildings", "1", FCVAR_NOTIFY | FCVAR_REPLICATED, "Allow Engineers to dismantle buildings." );
 ConVar pf_upgradable_buildings("pf_upgradable_buildings", "1", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_SERVER_CAN_EXECUTE, "Allow Engineers to upgrade dispensers and teleporters.");
 ConVar pf_flag_allow_throwing( "pf_flag_allow_throwing", "1", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_SERVER_CAN_EXECUTE,  "Allows players to throw the flag." );
 ConVar pf_flag_throw_force( "pf_flag_throw_force", "500", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_SERVER_CAN_EXECUTE, "Max flag throwing force" );

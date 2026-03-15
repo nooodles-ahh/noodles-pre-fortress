@@ -84,6 +84,7 @@ public:
 	virtual char* GetPlacementModel( void );
 
 	virtual void MakeCarriedObject( CTFPlayer* pPlayer );
+	virtual void DismantleObject( CTFPlayer *pPlayer );
 
 protected:
 	CNetworkVar( int, m_iState );

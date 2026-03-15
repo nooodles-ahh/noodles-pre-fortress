@@ -3703,6 +3703,47 @@ bool CTFPlayer::CanPickupBuilding( CBaseObject *pObject )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
+bool CTFPlayer::TryToDismantleBuilding( void )
+{
+	Vector vecForward;
+	AngleVectors( EyeAngles(), &vecForward );
+	Vector vecSwingStart = Weapon_ShootPosition();
+	float flRange = OBJECT_PICKUP_DISTANCE;
+	Vector vecSwingEnd = vecSwingStart + vecForward * flRange;
+
+	// only trace against objects
+	trace_t trace;
+	CTraceFilterIgnorePlayers traceFilter( NULL, COLLISION_GROUP_NONE );
+	UTIL_TraceLine( vecSwingStart, vecSwingEnd, MASK_SOLID, &traceFilter, &trace );
+
+	if ( trace.fraction < 1.0f &&
+		trace.m_pEnt &&
+		trace.m_pEnt->IsBaseObject() &&
+		trace.m_pEnt->GetTeamNumber() == GetTeamNumber() )
+	{
+		CBaseObject *pObject = static_cast<CBaseObject *>( trace.m_pEnt );
+		if ( pObject->GetBuilder() != this )
+			return false;
+
+		if ( pObject->IsBuilding() || pObject->IsDisabled() )
+			return false;
+		
+		// collect resources from this building and destroy
+		pObject->DismantleObject( this );
+
+		SpeakConceptIfAllowed( MP_CONCEPT_PICKUP_BUILDING );
+
+		m_flNextCarryTalkTime = gpGlobals->curtime + RandomFloat( 6.0f, 12.0f );
+
+		return true;
+	}
+
+	return false;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 bool CTFPlayer::TryToPickupBuilding( void )
 {
 	Vector vecForward;
@@ -3852,7 +3893,10 @@ bool CTFPlayer::DoClassSpecialSkill( void )
 	{
 		bDoSkill = false;
 #ifdef GAME_DLL
-		bDoSkill = TryToPickupBuilding();
+		if ( pf_dismantle_buildings.GetBool() )
+			bDoSkill = TryToDismantleBuilding();
+		else if ( pf_haul_buildings.GetBool() )
+			bDoSkill = TryToPickupBuilding();
 #endif
 	}
 	break;

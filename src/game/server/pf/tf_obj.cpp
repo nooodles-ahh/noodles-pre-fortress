@@ -62,6 +62,7 @@ ConVar tf_fastbuild("tf_fastbuild", "0", FCVAR_CHEAT, "Increase construction spe
 ConVar tf_obj_ground_clearance( "tf_obj_ground_clearance", "32", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY, "Object corners can be this high above the ground" );
 
 ConVar pf_ignore_nobuild( "pf_ignore_nobuild", "0", FCVAR_CHEAT, "Lets you build where you normally shouldn't" );
+ConVar pf_building_dismantle_factor( "pf_building_dismantle_factor", "0.5", FCVAR_CHEAT, "" );
 
 extern ConVar pf_haul_buildings;
 extern ConVar pf_upgradable_buildings;
@@ -860,6 +861,11 @@ void CBaseObject::DropCarriedObject(CTFPlayer* pPlayer)
 		pPlayer->m_Shared.SetCarriedObject( NULL );
 
 	//StopFollowingEntity();
+}
+
+void CBaseObject::DismantleObject( CTFPlayer *pPlayer )
+{
+	DestroyObject();
 }
 
 //-----------------------------------------------------------------------------

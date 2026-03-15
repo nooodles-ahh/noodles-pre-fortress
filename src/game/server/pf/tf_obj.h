@@ -35,6 +35,7 @@ struct animevent_t;
 
 extern ConVar object_verbose;
 extern ConVar obj_child_range_factor;
+extern ConVar pf_building_dismantle_factor;
 
 #if defined( _DEBUG )
 #define TRACE_OBJECT( str )										\
@@ -266,6 +267,7 @@ public:
 
 	virtual int		GetBaseHealth( void ) { return 0; }
 
+	virtual void	DismantleObject( CTFPlayer *pPlayer );
 
 public:		
 

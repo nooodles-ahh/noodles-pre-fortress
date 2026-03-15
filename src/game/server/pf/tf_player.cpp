@@ -418,6 +418,7 @@ CTFPlayer::CTFPlayer()
 #ifdef PF2_DLL
 	m_bIsDeveloper = CheckDeveloper();
 	m_hOffHandWeapon = NULL;
+	m_bAllowAmmoOverdraw = false;
 #endif
 }
 
@@ -1219,7 +1220,9 @@ void CTFPlayer::GiveDefaultItems()
 #endif
 	for( int iAmmo = 0; iAmmo < max; ++iAmmo )
 	{
-		GiveAmmo( m_Shared.MaxAmmo( iAmmo ), iAmmo );
+		bool isOverdrawnMetal = ( iAmmo == TF_AMMO_METAL ) && ( GetAmmoCount( iAmmo ) > m_Shared.MaxAmmo( iAmmo ) );
+		if( !isOverdrawnMetal )
+			GiveAmmo( m_Shared.MaxAmmo( iAmmo ), iAmmo );
 	}
 
 	m_iWeaponCount = 0;
@@ -1241,24 +1244,24 @@ void CTFPlayer::GiveDefaultItems()
 //-----------------------------------------------------------------------------
 void CTFPlayer::RemoveAllAmmo()
 {
-	int i;
-	for ( i = 0; i < TF_AMMO_COUNT-2; i++ )
-	{
-		m_iAmmo.Set( i, 0 );
-	}
 	// Remove grenades
 	int max = TF_AMMO_COUNT;
+	bool skipMetal = false;
 	if( m_bRegenerating )
 	{
 		if( m_pSpawnPoint && !m_pSpawnPoint->SpawnGrenades() )
 			max -= 2;
 		else
 			max -= TFGameRules()->GrenadesResupply();
+
+		if ( GetAmmoCount( TF_AMMO_METAL ) > m_Shared.MaxAmmo( TF_AMMO_METAL ) )
+			skipMetal = true;
 	}
 
-	for( i; i < max; i++ )
+	for( int i = 0; i < max; i++ )
 	{
-		m_iAmmo.Set( i, 0 );
+		if( i != TF_AMMO_METAL || !skipMetal )
+			m_iAmmo.Set( i, 0 );
 	}
 }
 #endif
@@ -5505,6 +5508,8 @@ int CTFPlayer::GiveAmmo( int iCount, int iAmmoIndex, bool bSuppressSound )
 	}
 
 	int iMax = m_Shared.MaxAmmo( iAmmoIndex );
+	if ( m_bAllowAmmoOverdraw )
+		iMax = iCount + GetAmmoCount( iAmmoIndex );
 	int iAdd = min( iCount, iMax - GetAmmoCount( iAmmoIndex ) );
 	if( iAdd < 1 )
 	{

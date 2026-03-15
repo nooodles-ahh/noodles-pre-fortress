@@ -97,6 +97,8 @@ public:
 #ifdef PF2
 	bool			WasDetonated( void ) { return m_bDetonated; }
 #endif
+
+	virtual void	DismantleObject( CTFPlayer *pPlayer );
 private:
 	void StartUpgrading( void );
 	void FinishUpgrading( void );

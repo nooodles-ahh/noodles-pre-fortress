@@ -33,6 +33,7 @@ extern ConVar pf_delayed_knife;
 extern ConVar pf_allow_special_class;
 extern ConVar pf_grenades_holstering;
 extern ConVar pf_haul_buildings;
+extern ConVar pf_dismantle_buildings;
 extern ConVar pf_upgradable_buildings;
 extern ConVar pf_flag_allow_throwing;
 extern ConVar pf_flag_throw_force;

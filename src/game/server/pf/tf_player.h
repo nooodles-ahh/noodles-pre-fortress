@@ -218,6 +218,7 @@ public:
 
 	bool				CanPickupBuilding( CBaseObject *pObject );
 	bool				TryToPickupBuilding( void );
+	bool				TryToDismantleBuilding( void );
 
 	int					BuildObservableEntityList( void );
 	virtual int			GetNextObserverSearchStartPoint( bool bReverse ); // Where we should start looping the player list in a FindNextObserverTarget call
@@ -351,6 +352,7 @@ public:
 #ifdef PF2_DLL
 	QAngle	ConcAngles( float flMultiOverride = -1.0f );
 	virtual float GetPlayerMaxSpeed();
+	void SetAllowAmmoOverdraw( bool allow ) { m_bAllowAmmoOverdraw = allow; }
 #endif
 
 	void	UpdateExpression( void );
@@ -619,6 +621,8 @@ public:
 	float				m_flPowerPlayTime;
 	bool				m_bIsDeveloper;
 	CNetworkVar( bool, m_bIsLeadDev );
+
+	bool				m_bAllowAmmoOverdraw;
 
 #ifdef PF2_DLL
 // Cyanide; put achievement related variables here
